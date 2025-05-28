@@ -1,8 +1,132 @@
+/* Reset default styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Cyber theme gradients */
+.bg-gradient-sparkle {
+  background: linear-gradient(45deg, #ff2a6d, #9f2fff);
+}
+
+.bg-sparkle {
+  background-size: 200% 200%;
+  animation: sparkle 5s linear infinite;
+}
+
+@keyframes sparkle {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Grid lines overlay */
+.grid-lines {
+  background-image: 
+    linear-gradient(to right, rgba(255, 42, 109, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 42, 109, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+/* Cyber card styles */
+.cyber-card {
+  background: rgba(10, 10, 15, 0.95);
+  box-shadow: 0 8px 32px 0 rgba(255, 42, 109, 0.1);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 42, 109, 0.18);
+}
+
+/* Dashboard metrics */
+.metric-card {
+  background: rgba(10, 10, 15, 0.95);
+  border: 1px solid rgba(255, 42, 109, 0.3);
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+  border-color: rgba(255, 42, 109, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 42, 109, 0.2);
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: bold;
+  background: linear-gradient(45deg, #ff2a6d, #9f2fff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin: 0.5rem 0;
+}
+
+/* Ensure text visibility */
+body {
+  color: white;
+  background-color: #0a0a0f;
+}
+
+input, button {
+  color: white;
+}
+
+/* Neon text effects */
+.neon-text {
+  text-shadow: 
+    0 0 5px rgba(255, 42, 109, 0.5),
+    0 0 10px rgba(255, 42, 109, 0.3),
+    0 0 15px rgba(255, 42, 109, 0.1);
+}
+
+.neon-purple {
+  text-shadow: 
+    0 0 5px rgba(159, 47, 255, 0.5),
+    0 0 10px rgba(159, 47, 255, 0.3),
+    0 0 15px rgba(159, 47, 255, 0.1);
 }
 
 .logo {

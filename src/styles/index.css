@@ -1,0 +1,467 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --neon-blue: #00f3ff;
+  --neon-pink: #ff00ff;
+  --neon-green: #39ff14;
+  --cyber-dark: #0a0a0f;
+  --cyber-darker: #070709;
+  --cyber-medium: #1a1b3d;
+  --cyber-light: #2a2b5d;
+  --money-green: #00ff9d;
+}
+
+body {
+  @apply antialiased;
+  background-color: var(--cyber-dark);
+  color: white;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-image: 
+    linear-gradient(45deg, rgba(7, 7, 9, 0.5) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(7, 7, 9, 0.5) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(7, 7, 9, 0.5) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(7, 7, 9, 0.5) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+/* Neon Text Effect */
+.neon-text {
+  text-shadow: 0 0 10px var(--neon-blue);
+}
+
+.neon-text-money {
+  text-shadow: 
+    0 0 5px var(--money-green),
+    0 0 10px var(--money-green),
+    0 0 20px var(--money-green);
+}
+
+.neon-border {
+  position: relative;
+}
+
+.neon-border::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid var(--neon-blue);
+  border-radius: inherit;
+  animation: neonPulse 2s infinite;
+  pointer-events: none;
+}
+
+/* Cyberpunk Card */
+.cyber-card {
+  background: var(--cyber-darker);
+  border: 1px solid rgba(0, 243, 255, 0.1);
+  border-radius: 0.5rem;
+  box-shadow: 0 0 20px rgba(0, 243, 255, 0.05);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.cyber-card:hover {
+  border-color: rgba(0, 243, 255, 0.2);
+  box-shadow: 0 0 30px rgba(0, 243, 255, 0.1);
+}
+
+/* Animations */
+@keyframes neonPulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 
+      0 0 5px var(--neon-blue),
+      0 0 10px var(--neon-blue),
+      0 0 20px var(--neon-blue);
+  }
+  50% {
+    opacity: 0.5;
+    box-shadow: 
+      0 0 2px var(--neon-blue),
+      0 0 5px var(--neon-blue),
+      0 0 10px var(--neon-blue);
+  }
+}
+
+@keyframes moneyPulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 
+      0 0 5px var(--money-green),
+      0 0 10px var(--money-green),
+      0 0 20px var(--money-green);
+  }
+  50% {
+    opacity: 0.5;
+    box-shadow: 
+      0 0 2px var(--money-green),
+      0 0 5px var(--money-green),
+      0 0 10px var(--money-green);
+  }
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--cyber-darker);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 243, 255, 0.2);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 243, 255, 0.4);
+}
+
+/* Button Styles */
+.cyber-button {
+  background: linear-gradient(45deg, rgba(0, 243, 255, 0.1), rgba(0, 255, 157, 0.1));
+  border: 1px solid rgba(0, 243, 255, 0.2);
+  color: white;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.cyber-button:hover {
+  background: linear-gradient(45deg, rgba(0, 243, 255, 0.2), rgba(0, 255, 157, 0.2));
+  border-color: rgba(0, 243, 255, 0.4);
+  box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+}
+
+.cyber-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cyber-button-success {
+  border-color: var(--money-green);
+  color: var(--money-green);
+  text-shadow: 0 0 5px var(--money-green);
+}
+
+.cyber-button-success:hover {
+  background: var(--money-green);
+  color: var(--cyber-dark);
+  box-shadow: 
+    0 0 20px var(--money-green),
+    inset 0 0 20px var(--money-green);
+}
+
+.cyber-button-danger {
+  border-color: var(--neon-pink);
+  color: var(--neon-pink);
+  text-shadow: 0 0 5px var(--neon-pink);
+}
+
+.cyber-button-danger:hover {
+  background: var(--neon-pink);
+  color: var(--cyber-dark);
+  box-shadow: 
+    0 0 20px var(--neon-pink),
+    inset 0 0 20px var(--neon-pink);
+}
+
+/* Grid Lines */
+.grid-lines {
+  background-image: 
+    linear-gradient(theme('colors.neon-pink/0.1') 1px, transparent 1px),
+    linear-gradient(90deg, theme('colors.neon-pink/0.1') 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(circle at center, black, transparent 80%);
+}
+
+/* Chart Styles */
+.chart-container {
+  @apply bg-dark-bg-secondary rounded-lg p-4 shadow-lg;
+  position: relative;
+  margin: auto;
+}
+
+/* Input styles */
+input[type="date"],
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select {
+  background: var(--cyber-darker);
+  border: 1px solid rgba(0, 243, 255, 0.2);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+input[type="date"]:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+select:focus {
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+  outline: none;
+}
+
+/* Range input styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  background: rgba(0, 243, 255, 0.1);
+  border-radius: 5px;
+  height: 6px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  background: var(--neon-blue);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 15px var(--neon-blue);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Theme Transitions */
+.transition-theme {
+  transition: background-color 0.3s ease-in-out,
+              color 0.3s ease-in-out,
+              border-color 0.3s ease-in-out,
+              box-shadow 0.3s ease-in-out;
+}
+
+/* Loading Animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Hover Effects */
+.hover-lift {
+  transition: transform 0.2s ease-in-out;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+/* Responsive Grid */
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(1, 1fr) !important;
+  }
+}
+
+/* Chart Responsiveness */
+.chart-container {
+  width: 100%;
+  height: 300px;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .chart-container {
+    height: 250px;
+  }
+}
+
+/* Button Styles */
+.btn {
+  @apply px-4 py-2 rounded-lg transition-all duration-200;
+}
+
+.btn-primary {
+  @apply bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 text-gray-900 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600;
+}
+
+.btn-danger {
+  @apply bg-red-600 text-white hover:bg-red-700 hover:shadow-lg;
+}
+
+.btn-success {
+  @apply bg-green-600 text-white hover:bg-green-700 hover:shadow-lg;
+}
+
+/* Button Hover Effects */
+.button-hover {
+  @apply transform transition-all duration-200 hover:scale-105;
+}
+
+/* Card Hover Effects */
+.card-hover {
+  @apply transform transition-all duration-200 hover:shadow-xl;
+}
+
+/* Landing page animations */
+@keyframes typewriter {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 100%;
+    opacity: 1;
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(10deg);
+  }
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes blink {
+  0%, 100% {
+    border-color: transparent;
+  }
+  50% {
+    border-color: currentColor;
+  }
+}
+
+.animate-typewriter {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid;
+  animation: typewriter 3s steps(30) 1s forwards,
+             blink 1s step-end infinite;
+  width: 0;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 10s linear infinite;
+}
+
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+.animate-sparkle {
+  animation: sparkle 3s linear infinite;
+}
+
+.bg-gradient-sparkle {
+  background: linear-gradient(
+    90deg,
+    theme('colors.neon-pink'),
+    theme('colors.neon-purple'),
+    theme('colors.soft-pink'),
+    theme('colors.soft-purple'),
+    theme('colors.neon-pink')
+  );
+  background-size: 300% 100%;
+}
+
+/* Add drop shadow glow effect */
+.drop-shadow-glow {
+  text-shadow: 
+    0 0 10px theme('colors.neon-pink'),
+    0 0 20px theme('colors.neon-purple'),
+    0 0 30px theme('colors.soft-pink'),
+    0 0 40px theme('colors.soft-purple');
+}
+
+/* Additional gradient for second button */
+.bg-gradient-sparkle-alt {
+  background: linear-gradient(
+    90deg,
+    theme('colors.soft-purple'),
+    theme('colors.neon-purple'),
+    theme('colors.soft-pink'),
+    theme('colors.neon-pink'),
+    theme('colors.soft-purple')
+  );
+  background-size: 300% 100%;
+}
+
+/* Remove floating animations from dashboard charts */
+.cyber-card .h-[400px],
+.cyber-card .h-[300px] {
+  animation: none !important;
+}
+
+@layer utilities {
+  .drop-shadow-glow {
+    text-shadow: 
+      0 0 10px theme('colors.neon-pink'),
+      0 0 20px theme('colors.neon-purple'),
+      0 0 30px theme('colors.soft-pink'),
+      0 0 40px theme('colors.soft-purple');
+  }
+
+  .bg-gradient-sparkle-alt {
+    background: linear-gradient(
+      90deg,
+      theme('colors.soft-purple'),
+      theme('colors.neon-purple'),
+      theme('colors.soft-pink'),
+      theme('colors.neon-pink'),
+      theme('colors.soft-purple')
+    );
+    background-size: 300% 100%;
+  }
+}
+
+/* Remove floating animations from dashboard */
+.cyber-card [class*='h-['] {
+  animation: none !important;
+} 
