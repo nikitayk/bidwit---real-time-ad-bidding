@@ -16,14 +16,22 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false,
     rollupOptions: {
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
           'chart-vendor': ['chart.js', 'react-chartjs-2'],
+          'ui-vendor': ['react-window', 'react-virtualized-auto-sizer'],
+          'icons': ['react-icons'],
         },
       },
     },
+    chunkSizeWarningLimit: 1000,
+    minify: 'esbuild',
+    target: 'esnext',
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'chart.js', 'react-chartjs-2', 'react-window', 'react-virtualized-auto-sizer'],
   },
 })

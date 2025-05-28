@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, Suspense, lazy } from 'react';
 import { useData } from '../context/DataContext';
+import LoadingSkeleton from '../components/LoadingSkeleton';
 import FileImport from '../components/FileImport';
 import ImportGuide from '../components/ImportGuide';
 import { FixedSizeList as List } from 'react-window';
@@ -24,6 +25,8 @@ const Line = lazy(() => import('react-chartjs-2').then(module => ({ default: mod
 const Bar = lazy(() => import('react-chartjs-2').then(module => ({ default: module.Bar })));
 const HelpGuide = lazy(() => import('../components/HelpGuide'));
 const NFactor = lazy(() => import('../components/NFactor'));
+const FileImport = lazy(() => import('../components/FileImport'));
+const ImportGuide = lazy(() => import('../components/ImportGuide'));
 
 // Register ChartJS components
 ChartJS.register(
@@ -61,6 +64,20 @@ const Dashboard: React.FC = () => {
     setIsPaused,
     isImporting
   } = useData();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading time for components
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <LoadingSkeleton />;
+  }
 
   // Memoize filter function with throttling
   const filterData = useCallback((data: typeof bidData) => {
