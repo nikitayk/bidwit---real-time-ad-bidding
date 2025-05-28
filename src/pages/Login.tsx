@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { FiEye, FiEyeOff, FiMail, FiLock } from 'react-icons/fi';
 import { RiHeartsFill, RiSparklingFill } from 'react-icons/ri';
 
@@ -9,7 +9,6 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate();
 
   // Clear any existing auth on mount
   useEffect(() => {

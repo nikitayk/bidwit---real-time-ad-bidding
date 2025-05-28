@@ -5,11 +5,13 @@ import { useData } from '../context/DataContext';
 
 interface BidData {
   timestamp: number;
+  adId: string;
   bidPrice: number;
-  isWon: boolean;
   ctr: number;
+  isWon: boolean;
   campaign: string;
   executionTime: number;
+  performance: number;
 }
 
 // Smaller chunks and batches for smoother processing
@@ -59,11 +61,13 @@ const FileImport: React.FC = () => {
 
         return {
           timestamp: parseTimestamp(timestamp),
+          adId: ad_id,
           bidPrice,
           ctr: parsedCTR,
           isWon: win_status === '5' || win_status === '1',
           campaign: ad_id || 'Default Campaign',
-          executionTime: Math.random() * 100
+          executionTime: Math.random() * 100,
+          performance: Math.random() * 0.5 + 0.5 // Random performance between 0.5 and 1.0
         };
       };
 

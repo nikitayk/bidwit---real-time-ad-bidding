@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, Suspense, lazy } from 'react';
 import { useData } from '../context/DataContext';
 import LoadingSkeleton from '../components/LoadingSkeleton';
-import FileImport from '../components/FileImport';
-import ImportGuide from '../components/ImportGuide';
 import { FixedSizeList as List } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import {
@@ -49,6 +47,8 @@ ChartJS.defaults.animation = false; // Disable animations for better performance
 const Dashboard: React.FC = () => {
   const [showHelp, setShowHelp] = useState(false);
   const [showImportGuide, setShowImportGuide] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  
   const {
     bidData,
     metrics,
@@ -64,22 +64,8 @@ const Dashboard: React.FC = () => {
     setIsPaused,
     isImporting
   } = useData();
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    // Simulate loading time for components
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return <LoadingSkeleton />;
-  }
-
-  // Memoize filter function with throttling
+  // Move all hooks before conditional return
   const filterData = useCallback((data: typeof bidData) => {
     return data.filter(bid => {
       const bidTime = typeof bid.timestamp === 'number' ? bid.timestamp : new Date(bid.timestamp).getTime();
@@ -90,20 +76,17 @@ const Dashboard: React.FC = () => {
     });
   }, [dateRange, selectedCampaign]);
 
-  // Memoize filtered data with limit
   const filteredData = useMemo(() => {
     const filtered = filterData(bidData);
-    return filtered.slice(-100); // Only show last 100 items for performance
+    return filtered.slice(-100);
   }, [filterData, bidData]);
 
-  // Memoize chart data with sampling
   const chartData = useMemo(() => {
     const dataPoints = filteredData.length;
-    const samplingRate = Math.ceil(dataPoints / 50); // Sample to max 50 points
+    const samplingRate = Math.ceil(dataPoints / 50);
     return filteredData.filter((_, index) => index % samplingRate === 0);
   }, [filteredData]);
 
-  // Memoize performance data
   const performanceData = useMemo(() => ({
     labels: chartData.map(bid => new Date(bid.timestamp).toLocaleTimeString()),
     datasets: [
@@ -132,7 +115,6 @@ const Dashboard: React.FC = () => {
     ]
   }), [chartData]);
 
-  // Memoize campaign data
   const campaignData = useMemo(() => ({
     labels: campaignKPIs.map(kpi => kpi.name),
     datasets: [
@@ -151,7 +133,6 @@ const Dashboard: React.FC = () => {
     ]
   }), [campaignKPIs]);
 
-  // Memoize chart options
   const lineChartOptions = useMemo<ChartOptions<'line'>>(() => ({
     responsive: true,
     maintainAspectRatio: false,
@@ -239,7 +220,6 @@ const Dashboard: React.FC = () => {
     }
   }), []);
 
-  // Memoize bar chart options
   const barChartOptions = useMemo<ChartOptions<'bar'>>(() => ({
     responsive: true,
     maintainAspectRatio: false,
@@ -291,7 +271,6 @@ const Dashboard: React.FC = () => {
     }
   }), []);
 
-  // Memoized handlers
   const handleDateRangeStart = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setDateRange([new Date(e.target.value), dateRange[1]]);
   }, [dateRange, setDateRange]);
@@ -304,7 +283,6 @@ const Dashboard: React.FC = () => {
     setSelectedCampaign(e.target.value);
   }, [setSelectedCampaign]);
 
-  // Virtualized bid console row renderer
   const BidRow = useCallback(({ index, style }: { index: number; style: React.CSSProperties }) => {
     const bid = filteredData[filteredData.length - 1 - index];
     if (!bid) return null;
@@ -333,10 +311,21 @@ const Dashboard: React.FC = () => {
     );
   }, [filteredData]);
 
-  // Add pause/resume button
   const togglePause = useCallback(() => {
     setIsPaused((prev: boolean) => !prev);
   }, [setIsPaused]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <LoadingSkeleton />;
+  }
 
   return (
     <div className="min-h-screen bg-cyber-dark text-white p-2 md:p-6 pt-4 md:pt-12">

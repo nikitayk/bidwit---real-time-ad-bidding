@@ -273,13 +273,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Helper function to update series with proper trimming
     const updateSeries = <T extends { timestamp: number }>(
-      setter: React.Dispatch<React.SetStateAction<T[]>>,
       current: T[],
       newPoints: T[]
     ) => {
-      const filtered = current.filter(point => point.timestamp > cutoffTime);
-      const combined = [...filtered, ...newPoints].sort((a, b) => a.timestamp - b.timestamp);
-      // Keep only the most recent MAX_DATA_POINTS
+      const combined = [...current, ...newPoints];
       return combined.slice(-MAX_DATA_POINTS);
     };
 
@@ -289,7 +286,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         timestamp: bid.timestamp,
         value: bid.bidPrice
       }));
-      return updateSeries(setBidPriceSeries, current, newPoints);
+      return updateSeries(current, newPoints);
     });
 
     // Update CTR series
@@ -298,7 +295,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         timestamp: bid.timestamp,
         value: bid.ctr
       }));
-      return updateSeries(setCtrSeries, current, newPoints);
+      return updateSeries(current, newPoints);
     });
 
     // Update performance series
@@ -310,7 +307,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         performance: bid.performance,
         successRate: bid.isWon ? 1 : 0
       }));
-      const updated = updateSeries(setPerformanceSeries, current, newPoints);
+      const updated = updateSeries(current, newPoints);
       console.log('Performance series size:', updated.length);
       return updated;
     });

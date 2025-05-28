@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { FiInfo, FiX } from 'react-icons/fi';
+import { FiX } from 'react-icons/fi';
 import { RiFileTextLine, RiInformationLine } from 'react-icons/ri';
 
 interface ImportGuideProps {
