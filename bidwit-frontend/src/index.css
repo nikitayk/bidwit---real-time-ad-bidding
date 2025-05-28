@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-dark-bg-primary text-dark-text-primary;
+  }
+}
+
+/* Custom styles for date picker in dark mode */
+.react-datepicker {
+  @apply bg-dark-bg-secondary border-dark-border;
+}
+
+.react-datepicker__header {
+  @apply bg-dark-bg-tertiary border-dark-border;
+}
+
+.react-datepicker__current-month,
+.react-datepicker__day-name,
+.react-datepicker__day {
+  @apply text-dark-text-primary;
+}
+
+.react-datepicker__day:hover {
+  @apply bg-primary-600 text-white;
+}
+
+.react-datepicker__day--selected {
+  @apply bg-primary-500 text-white;
+}
+
+.react-datepicker__day--keyboard-selected {
+  @apply bg-primary-500 text-white;
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  @apply w-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-dark-bg-secondary;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-dark-border rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-dark-text-secondary;
+} 

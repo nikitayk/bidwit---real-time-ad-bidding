@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background rectangle with gradient -->
+  <rect width="120" height="40" rx="8" fill="url(#gradient)" />
+  
+  <!-- Text "BID" -->
+  <text x="20" y="27" font-family="Arial" font-weight="bold" font-size="24" fill="white">BID</text>
+  
+  <!-- Text "WIT" -->
+  <text x="60" y="27" font-family="Arial" font-weight="bold" font-size="24" fill="#38BDF8">WIT</text>
+  
+  <!-- Gradient definition -->
+  <defs>
+    <linearGradient id="gradient" x1="0" y1="0" x2="120" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" style="stop-color:#0F172A" />
+      <stop offset="100%" style="stop-color:#1E293B" />
+    </linearGradient>
+  </defs>
+</svg> 
