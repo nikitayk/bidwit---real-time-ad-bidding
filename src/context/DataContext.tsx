@@ -269,7 +269,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log('Updating time series with bids:', newBids.length);
     const now = Date.now();
     const timeWindow = 5 * 60 * 1000; // 5 minutes window
-    const cutoffTime = now - timeWindow;
 
     // Helper function to update series with proper trimming
     const updateSeries = <T extends { timestamp: number }>(
@@ -422,7 +421,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const originalBid = importedDataBuffer.current[currentDataIndex.current];
-      const timeOffset = originalBid.timestamp - firstTimestamp;
       
       // Create a new bid with updated timestamp
       const newBid: BidData = {
