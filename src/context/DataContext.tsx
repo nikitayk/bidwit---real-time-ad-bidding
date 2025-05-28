@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
+// Add NodeJS types
+import type { Timeout } from 'node:timers';
+
 interface BidData {
   timestamp: number;
   bidPrice: number;
@@ -65,11 +68,11 @@ const defaultMetrics: MetricsData = {
 
 // Constants for data management - ULTRA SLOW SETTINGS
 const MAX_STORED_BIDS = 20; // Bare minimum stored bids
-const UPDATE_INTERVAL = 60000; // Full minute between updates
-const METRICS_UPDATE_DELAY = 10000; // 10 second delay for metrics
-const IMPORT_CHUNK_SIZE = 500; // Tiny import chunks
+const UPDATE_INTERVAL = 120000; // 2 minutes between updates
+const METRICS_UPDATE_DELAY = 15000; // 15 second delay for metrics
+const IMPORT_CHUNK_SIZE = 100; // Tiny import chunks
 const MAX_VISIBLE_POINTS = 5; // Extremely few visible points
-const MIN_UPDATE_INTERVAL = 45000; // Force 45 second minimum between ANY updates
+const MIN_UPDATE_INTERVAL = 90000; // Force 90 second minimum between ANY updates
 
 // Demo data configuration with microscopic changes
 const CAMPAIGN_PRICES: { [key: string]: number } = {
@@ -104,6 +107,10 @@ const generateDemoMetrics = (): MetricsData => ({
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Add ref to track data source
+  const isUsingMockData = useRef<boolean>(true);
+  const updateIntervalRef = useRef<number | null>(null);
+  
   // State declarations with demo data
   const [activeBidData, setActiveBidData] = useState<BidData[]>([]);
   const [metrics, setMetrics] = useState<MetricsData>(generateDemoMetrics());
@@ -120,7 +127,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Refs
   const cleanupRef = useRef<(() => void) | null>(null);
-  const updateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const metricsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const historicalDataRef = useRef<BidData[]>([]);
 
@@ -298,12 +304,87 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [campaigns, nFactor]);
 
+  // Cleanup function to clear all intervals and timeouts
+  const cleanupAllIntervals = useCallback(() => {
+    if (updateIntervalRef.current) {
+      clearInterval(updateIntervalRef.current);
+      updateIntervalRef.current = null;
+    }
+    if (metricsTimeoutRef.current) {
+      clearTimeout(metricsTimeoutRef.current);
+      metricsTimeoutRef.current = null;
+    }
+    if (cleanupRef.current) {
+      cleanupRef.current();
+      cleanupRef.current = null;
+    }
+  }, []);
+
+  // Data import with proper cleanup
+  const importData = useCallback(async (newData: BidData[]) => {
+    try {
+      setIsImporting(true);
+      setIsPaused(true);
+      
+      // Stop all existing updates
+      cleanupAllIntervals();
+      
+      // Clear all existing data
+      setActiveBidData([]);
+      historicalDataRef.current = [];
+      setMetrics(generateDemoMetrics());
+      setCampaignKPIs([]);
+      
+      // Mark that we're using imported data
+      isUsingMockData.current = false;
+
+      // Process imported data in very small chunks
+      const chunks = Math.ceil(newData.length / IMPORT_CHUNK_SIZE);
+      for (let i = 0; i < chunks; i++) {
+        const start = i * IMPORT_CHUNK_SIZE;
+        const end = Math.min(start + IMPORT_CHUNK_SIZE, newData.length);
+        const chunk = newData.slice(start, end);
+        
+        await new Promise<void>(resolve => {
+          setTimeout(() => {
+            requestAnimationFrame(() => {
+              addNewData(chunk);
+              if (i === chunks - 1) {
+                const finalMetrics = calculateMetrics(chunk);
+                const finalKPIs = calculateCampaignKPIs(chunk);
+                setMetrics(finalMetrics);
+                setCampaignKPIs(finalKPIs);
+              }
+              resolve();
+            });
+          }, 2000); // 2 second delay between chunks
+        });
+      }
+
+      // Update campaigns from imported data
+      const uniqueCampaigns = new Set(newData.map(bid => bid.campaign));
+      setCampaigns(Array.from(uniqueCampaigns));
+
+    } catch (error) {
+      console.error('Error importing data:', error);
+      throw new Error('Failed to import data');
+    } finally {
+      setIsImporting(false);
+      setIsPaused(true); // Keep paused after import
+    }
+  }, [addNewData, calculateMetrics, calculateCampaignKPIs, cleanupAllIntervals]);
+
   // Glacially slow real-time updates
   const startRealTimeUpdates = useCallback(() => {
-    if (isImporting || isPaused) return () => {};
+    if (isImporting || isPaused || !isUsingMockData.current) return () => {};
+
+    // Clear any existing interval
+    if (updateIntervalRef.current) {
+      clearInterval(updateIntervalRef.current);
+    }
 
     let lastUpdate = Date.now();
-    const intervalId = setInterval(() => {
+    updateIntervalRef.current = setInterval(() => {
       const now = Date.now();
       
       // Multiple levels of aggressive throttling
@@ -318,16 +399,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setTimeout(() => {
         setTimeout(() => {
           setTimeout(() => {
+            if (!isUsingMockData.current) {
+              console.log('Skipping mock update - using imported data');
+              return;
+            }
             requestAnimationFrame(() => {
               const lastTimestamp = activeBidData[activeBidData.length - 1]?.timestamp || Date.now();
               const newBid = generateDemoBid(lastTimestamp);
               
               // Add single bid with multiple delays
               setTimeout(() => {
+                if (!isUsingMockData.current) return;
                 addNewData([newBid]);
                 
                 // Super delayed metrics update
                 setTimeout(() => {
+                  if (!isUsingMockData.current) return;
                   const recentData = [...activeBidData.slice(-MAX_VISIBLE_POINTS), newBid];
                   updateMetrics(recentData);
                 }, 5000);
@@ -338,10 +425,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }, 2000);
     }, UPDATE_INTERVAL);
 
-    return () => clearInterval(intervalId);
+    return () => {
+      if (updateIntervalRef.current) {
+        clearInterval(updateIntervalRef.current);
+      }
+    };
   }, [isImporting, isPaused, activeBidData, addNewData, generateDemoBid, updateMetrics]);
 
-  // Initialize with fewer demo records
+  // Initialize with fewer demo records - MOVED UP
   const generateInitialDemoData = useCallback((count: number): BidData[] => {
     const now = Date.now();
     const availableCampaigns = Object.keys(CAMPAIGN_PRICES);
@@ -358,7 +449,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return {
         timestamp,
         bidPrice: basePrice + priceChange,
-        isWon: Math.random() < DEMO_WIN_RATE,
+        isWon: Math.random() < 0.6,
         ctr: DEMO_CTR_BASE + (Math.random() * CTR_VARIANCE),
         campaign,
         executionTime: 30 + Math.random() * EXEC_TIME_VARIANCE,
@@ -366,17 +457,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, []);
 
-  // Initialize demo data immediately
+  // Initialize demo data with proper cleanup
   useEffect(() => {
     const initializeDemoData = () => {
+      // Only initialize if we're using mock data
+      if (!isUsingMockData.current) return;
+      
       const demoData = generateInitialDemoData(INITIAL_DEMO_COUNT);
       setActiveBidData(demoData);
       
-      // Calculate initial KPIs
       const initialKPIs = calculateCampaignKPIs(demoData);
       setCampaignKPIs(initialKPIs);
       
-      // Update metrics
       const initialMetrics = calculateMetrics(demoData);
       setMetrics(initialMetrics);
       
@@ -384,82 +476,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       cleanupRef.current = startRealTimeUpdates();
     };
 
+    cleanupAllIntervals();
     initializeDemoData();
     
     return () => {
-      if (cleanupRef.current) {
-        cleanupRef.current();
-      }
+      cleanupAllIntervals();
     };
-  }, [generateInitialDemoData, calculateCampaignKPIs, calculateMetrics, startRealTimeUpdates]);
-
-  // Data import with clear separation from demo data
-  const importData = useCallback(async (newData: BidData[]) => {
-    try {
-      setIsImporting(true);
-      setIsPaused(true);
-      
-      if (cleanupRef.current) {
-        cleanupRef.current();
-        cleanupRef.current = null;
-      }
-
-      // Clear all existing demo data
-      setActiveBidData([]);
-      historicalDataRef.current = [];
-      setMetrics(generateDemoMetrics()); // Reset metrics
-      setCampaignKPIs([]); // Reset KPIs
-
-      // Process imported data
-      const chunks = Math.ceil(newData.length / IMPORT_CHUNK_SIZE);
-      for (let i = 0; i < chunks; i++) {
-        const start = i * IMPORT_CHUNK_SIZE;
-        const end = Math.min(start + IMPORT_CHUNK_SIZE, newData.length);
-        const chunk = newData.slice(start, end);
-        
-        await new Promise<void>(resolve => {
-          requestAnimationFrame(() => {
-            addNewData(chunk);
-            if (i === chunks - 1) {
-              // Update all metrics and KPIs after import
-              const finalMetrics = calculateMetrics(chunk);
-              const finalKPIs = calculateCampaignKPIs(chunk);
-              setMetrics(finalMetrics);
-              setCampaignKPIs(finalKPIs);
-            }
-            resolve();
-          });
-        });
-      }
-
-      // Update campaigns from imported data
-      const uniqueCampaigns = new Set(newData.map(bid => bid.campaign));
-      setCampaigns(Array.from(uniqueCampaigns));
-
-    } catch (error) {
-      console.error('Error importing data:', error);
-      throw new Error('Failed to import data. Please check the file format.');
-    } finally {
-      setIsImporting(false);
-      setIsPaused(true); // Keep updates paused after import
-    }
-  }, [addNewData, calculateMetrics, calculateCampaignKPIs]);
-
-  // Cleanup
-  useEffect(() => {
-    return () => {
-      if (cleanupRef.current) {
-        cleanupRef.current();
-        cleanupRef.current = null;
-      }
-      if (updateTimeoutRef.current) {
-        clearTimeout(updateTimeoutRef.current);
-      }
-      if (metricsTimeoutRef.current) {
-        clearTimeout(metricsTimeoutRef.current);
-      }
-    };
-  }, []);
+  }, [generateInitialDemoData, calculateCampaignKPIs, calculateMetrics, startRealTimeUpdates, cleanupAllIntervals]);
 
   // Context value
   const contextValue = useMemo(() => ({
