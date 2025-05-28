@@ -17,6 +17,7 @@ import {
   ChartOptions
 } from 'chart.js';
 import { RiQuestionLine, RiPauseLine, RiPlayLine } from 'react-icons/ri';
+import { FiInfo } from 'react-icons/fi';
 
 // Lazy load heavy components
 const Line = lazy(() => import('react-chartjs-2').then(module => ({ default: module.Line })));
@@ -44,7 +45,7 @@ ChartJS.defaults.animation = false; // Disable animations for better performance
 
 const Dashboard: React.FC = () => {
   const [showHelp, setShowHelp] = useState(false);
-  const [showImportGuide, setShowImportGuide] = useState(true);
+  const [showImportGuide, setShowImportGuide] = useState(false);
   const {
     bidData,
     metrics,
@@ -321,47 +322,47 @@ const Dashboard: React.FC = () => {
   }, [setIsPaused]);
 
   return (
-    <div className="min-h-screen bg-cyber-dark text-white p-4 md:p-6 pt-8 md:pt-12">
+    <div className="min-h-screen bg-cyber-dark text-white p-2 md:p-6 pt-4 md:pt-12">
       <div className="max-w-[1920px] mx-auto">
         {/* Status Banner */}
         {isImporting && (
-          <div className="fixed top-0 left-0 right-0 bg-cyber-pink/90 text-white py-2 px-4 text-center z-50">
+          <div className="fixed top-0 left-0 right-0 bg-cyber-pink/90 text-white py-2 px-4 text-center z-50 text-sm md:text-base">
             Importing data... Please wait
           </div>
         )}
 
         {/* Data Source Indicator */}
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-4 md:mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-2 md:gap-0">
           <div className="flex items-center gap-2">
             <span className={`h-3 w-3 rounded-full ${isPaused ? 'bg-cyber-pink' : 'bg-soft-pink animate-pulse'}`} />
-            <span className="text-sm">
+            <span className="text-xs md:text-sm">
               {isPaused ? 'Updates Paused' : 'Live Updates Active'}
             </span>
           </div>
-          <div className="text-sm text-soft-purple">
+          <div className="text-xs md:text-sm text-soft-purple">
             {bidData.length > 0 ? `Showing ${bidData.length} records` : 'No data available'}
           </div>
         </div>
 
         {/* Help and Control Buttons */}
-        <div className="fixed bottom-6 right-6 flex gap-2 z-[90]">
+        <div className="fixed bottom-4 md:bottom-6 right-4 md:right-6 flex gap-2 z-[90]">
           <button
             onClick={togglePause}
-            className="bg-gradient-sparkle p-4 rounded-full shadow-lg hover:animate-glow transition-all duration-300 hover:scale-110"
+            className="bg-gradient-sparkle p-3 md:p-4 rounded-full shadow-lg hover:animate-glow transition-all duration-300 hover:scale-110"
             aria-label={isPaused ? "Resume Updates" : "Pause Updates"}
           >
             {isPaused ? (
-              <RiPlayLine className="w-6 h-6" />
+              <RiPlayLine className="w-5 h-5 md:w-6 md:h-6" />
             ) : (
-              <RiPauseLine className="w-6 h-6" />
+              <RiPauseLine className="w-5 h-5 md:w-6 md:h-6" />
             )}
           </button>
           <button
             onClick={() => setShowHelp(true)}
-            className="bg-gradient-sparkle p-4 rounded-full shadow-lg hover:animate-glow transition-all duration-300 hover:scale-110"
+            className="bg-gradient-sparkle p-3 md:p-4 rounded-full shadow-lg hover:animate-glow transition-all duration-300 hover:scale-110"
             aria-label="Open Help Guide"
           >
-            <RiQuestionLine className="w-6 h-6" />
+            <RiQuestionLine className="w-5 h-5 md:w-6 md:h-6" />
           </button>
         </div>
 
@@ -370,48 +371,48 @@ const Dashboard: React.FC = () => {
           {showHelp && <HelpGuide onClose={() => setShowHelp(false)} />}
         </Suspense>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
           {/* Main Metrics */}
-          <div className="lg:col-span-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div className="metric-card">
-              <h3 className="text-neon-pink mb-2 animate-shimmer">Total Bids</h3>
-              <p className="metric-value">{metrics.totalBids}</p>
-              <div className="flex justify-between text-sm mt-2">
+          <div className="lg:col-span-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
+            <div className="metric-card p-3 md:p-4">
+              <h3 className="text-neon-pink mb-2 animate-shimmer text-sm md:text-base">Total Bids</h3>
+              <p className="metric-value text-lg md:text-xl">{metrics.totalBids}</p>
+              <div className="flex justify-between text-xs md:text-sm mt-2">
                 <span className="text-soft-pink">Won: {metrics.successfulBids}</span>
                 <span className="text-cyber-pink">Lost: {metrics.failedBids}</span>
               </div>
             </div>
-            <div className="metric-card">
-              <h3 className="text-neon-purple mb-2 animate-shimmer">Win Rate</h3>
-              <p className="metric-value">{metrics.winRate.toFixed(2)}%</p>
-              <p className="text-sm text-soft-purple mt-2">
+            <div className="metric-card p-3 md:p-4">
+              <h3 className="text-neon-purple mb-2 animate-shimmer text-sm md:text-base">Win Rate</h3>
+              <p className="metric-value text-lg md:text-xl">{metrics.winRate.toFixed(2)}%</p>
+              <p className="text-xs md:text-sm text-soft-purple mt-2">
                 Avg. Execution: {metrics.averageExecutionTime.toFixed(2)}ms
               </p>
             </div>
-            <div className="metric-card">
-              <h3 className="text-neon-pink mb-2 animate-shimmer">Budget</h3>
-              <p className="metric-value">${metrics.remainingBudget.toFixed(2)}</p>
-              <div className="flex justify-between text-sm mt-2">
+            <div className="metric-card p-3 md:p-4">
+              <h3 className="text-neon-pink mb-2 animate-shimmer text-sm md:text-base">Budget</h3>
+              <p className="metric-value text-lg md:text-xl">${metrics.remainingBudget.toFixed(2)}</p>
+              <div className="flex justify-between text-xs md:text-sm mt-2">
                 <span className="text-soft-purple">Total: ${metrics.totalBudget}</span>
                 <span className="text-soft-pink">Spent: ${(metrics.totalBudget - metrics.remainingBudget).toFixed(2)}</span>
               </div>
             </div>
-            <div className="metric-card">
-              <h3 className="text-neon-purple mb-2 animate-shimmer">Bid Metrics</h3>
-              <p className="metric-value">${metrics.averageBidPrice.toFixed(2)}</p>
-              <p className="text-sm text-soft-purple mt-2">
+            <div className="metric-card p-3 md:p-4">
+              <h3 className="text-neon-purple mb-2 animate-shimmer text-sm md:text-base">Bid Metrics</h3>
+              <p className="metric-value text-lg md:text-xl">${metrics.averageBidPrice.toFixed(2)}</p>
+              <p className="text-xs md:text-sm text-soft-purple mt-2">
                 Average Bid Price | CTR: {(metrics.averageCTR * 100).toFixed(2)}%
               </p>
             </div>
           </div>
 
           {/* Controls */}
-          <div className="lg:col-span-12 flex flex-wrap gap-4 items-center justify-between mb-6">
-            <div className="flex flex-wrap gap-4 items-center">
+          <div className="lg:col-span-12 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between mb-4 md:mb-6">
+            <div className="flex flex-wrap gap-3 md:gap-4 items-center w-full md:w-auto">
               <select
                 value={selectedCampaign}
                 onChange={handleCampaignChange}
-                className="bg-cyber-darker border border-neon-blue/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neon-blue"
+                className="bg-cyber-darker border border-neon-blue/30 rounded-lg px-3 py-1.5 md:px-4 md:py-2 text-white text-sm md:text-base focus:outline-none focus:border-neon-blue w-full sm:w-auto"
               >
                 <option value="all">All Campaigns</option>
                 {campaigns.map(campaign => (
@@ -429,63 +430,53 @@ const Dashboard: React.FC = () => {
                 />
               </Suspense>
 
-              <FileImport />
-
-              {!showImportGuide && (
+              <div className="flex items-center gap-3 md:gap-4 w-full sm:w-auto">
+                <FileImport />
                 <button
                   onClick={() => setShowImportGuide(true)}
-                  className="text-neon-blue hover:text-neon-blue/80"
+                  className="bg-gradient-to-r from-neon-purple to-neon-pink px-3 py-1.5 md:px-4 md:py-2 rounded-lg shadow-lg hover:animate-glow transition-all duration-300 flex items-center gap-2 text-white font-medium border border-neon-pink/30 text-sm md:text-base w-full sm:w-auto justify-center"
                 >
-                  Show Import Guide
-                </button>
-              )}
-            </div>
-
-            <div className="flex gap-4 items-center">
-              <input
-                type="date"
-                value={dateRange[0].toISOString().split('T')[0]}
-                onChange={handleDateRangeStart}
-                className="bg-cyber-darker border border-neon-blue/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neon-blue"
-              />
-              <span className="text-soft-blue">to</span>
-              <input
-                type="date"
-                value={dateRange[1].toISOString().split('T')[0]}
-                onChange={handleDateRangeEnd}
-                className="bg-cyber-darker border border-neon-blue/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neon-blue"
-              />
-            </div>
-          </div>
-
-          {/* Import Guide Section */}
-          {showImportGuide && (
-            <div className="lg:col-span-12 mb-6">
-              <ImportGuide />
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setShowImportGuide(false)}
-                  className="text-gray-400 hover:text-white text-sm"
-                >
-                  Hide Guide
+                  <FiInfo className="w-4 h-4 md:w-5 md:h-5" />
+                  Import Guide
                 </button>
               </div>
             </div>
-          )}
+
+            <div className="flex flex-col sm:flex-row gap-2 md:gap-4 items-start sm:items-center w-full md:w-auto">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <input
+                  type="date"
+                  value={dateRange[0].toISOString().split('T')[0]}
+                  onChange={handleDateRangeStart}
+                  className="bg-cyber-darker border border-neon-blue/30 rounded-lg px-3 py-1.5 md:px-4 md:py-2 text-white text-sm md:text-base focus:outline-none focus:border-neon-blue w-full sm:w-auto"
+                />
+                <span className="text-soft-blue text-sm md:text-base">to</span>
+                <input
+                  type="date"
+                  value={dateRange[1].toISOString().split('T')[0]}
+                  onChange={handleDateRangeEnd}
+                  className="bg-cyber-darker border border-neon-blue/30 rounded-lg px-3 py-1.5 md:px-4 md:py-2 text-white text-sm md:text-base focus:outline-none focus:border-neon-blue w-full sm:w-auto"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Import Guide */}
+          <ImportGuide isOpen={showImportGuide} onClose={() => setShowImportGuide(false)} />
 
           {/* Charts */}
-          <div className="lg:col-span-8">
-            <div className="cyber-card p-4 hover:animate-glow transition-all duration-300 border border-neon-pink/30">
-              <h3 className="text-neon-pink mb-4 animate-shimmer">Bid Performance</h3>
-              <div className="h-[400px]">
+          <div className="lg:col-span-8 space-y-4 md:space-y-6">
+            <div className="cyber-card p-3 md:p-4 hover:animate-glow transition-all duration-300 border border-neon-pink/30">
+              <h3 className="text-neon-pink mb-3 md:mb-4 animate-shimmer text-sm md:text-base">Bid Performance</h3>
+              <div className="h-[300px] md:h-[400px]">
                 <Suspense fallback={<div>Loading chart...</div>}>
                   <Line data={performanceData} options={lineChartOptions} />
                 </Suspense>
               </div>
             </div>
-            <div className="cyber-card p-4 mt-6 hover:animate-glow transition-all duration-300 border border-neon-purple/30">
-              <h3 className="text-neon-purple mb-4 animate-shimmer">Campaign Performance</h3>
-              <div className="h-[300px]">
+            <div className="cyber-card p-3 md:p-4 hover:animate-glow transition-all duration-300 border border-neon-purple/30">
+              <h3 className="text-neon-purple mb-3 md:mb-4 animate-shimmer text-sm md:text-base">Campaign Performance</h3>
+              <div className="h-[250px] md:h-[300px]">
                 <Suspense fallback={<div>Loading chart...</div>}>
                   <Bar data={campaignData} options={barChartOptions} />
                 </Suspense>
@@ -494,17 +485,17 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Bid Console and Campaign KPIs */}
-          <div className="lg:col-span-4">
-            <div className="cyber-card p-4 mb-6 hover:animate-glow transition-all duration-300 border border-neon-pink/30">
-              <h3 className="text-neon-pink mb-4 animate-shimmer">Live Bid Console</h3>
-              <div className="h-[300px]">
+          <div className="lg:col-span-4 space-y-4 md:space-y-6">
+            <div className="cyber-card p-3 md:p-4 hover:animate-glow transition-all duration-300 border border-neon-pink/30">
+              <h3 className="text-neon-pink mb-3 md:mb-4 animate-shimmer text-sm md:text-base">Live Bid Console</h3>
+              <div className="h-[250px] md:h-[300px]">
                 <AutoSizer>
                   {({ height, width }: { height: number; width: number }) => (
                     <List
                       height={height}
                       width={width}
                       itemCount={Math.min(filteredData.length, 100)}
-                      itemSize={80}
+                      itemSize={70}
                     >
                       {BidRow}
                     </List>
@@ -513,18 +504,18 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
 
-            <div className="cyber-card p-4 hover:animate-glow transition-all duration-300 border border-neon-purple/30">
-              <h3 className="text-neon-purple mb-4 animate-shimmer">Campaign KPIs</h3>
-              <div className="space-y-4">
+            <div className="cyber-card p-3 md:p-4 hover:animate-glow transition-all duration-300 border border-neon-purple/30">
+              <h3 className="text-neon-purple mb-3 md:mb-4 animate-shimmer text-sm md:text-base">Campaign KPIs</h3>
+              <div className="space-y-3 md:space-y-4">
                 {campaignKPIs.map(kpi => (
-                  <div key={kpi.name} className="p-3 border border-soft-purple/20 rounded hover:animate-glow transition-all duration-300">
+                  <div key={kpi.name} className="p-2 md:p-3 border border-soft-purple/20 rounded hover:animate-glow transition-all duration-300">
                     <div className="flex justify-between items-center mb-2">
-                      <h4 className="font-bold text-soft-purple">{kpi.name}</h4>
-                      <span className="text-sm text-soft-pink">
+                      <h4 className="font-bold text-soft-purple text-sm md:text-base">{kpi.name}</h4>
+                      <span className="text-xs md:text-sm text-soft-pink">
                         ${kpi.totalSpent.toFixed(2)}
                       </span>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="grid grid-cols-2 gap-2 text-xs md:text-sm">
                       <div>
                         <p className="text-neon-pink">Win Rate</p>
                         <p className="text-soft-pink">{kpi.winRate.toFixed(2)}%</p>

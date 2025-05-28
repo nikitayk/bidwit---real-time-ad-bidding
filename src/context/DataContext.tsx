@@ -47,7 +47,7 @@ interface BidData {
   isWon: boolean;
   campaign: string;
   executionTime: number;
-  performance?: number;
+  performance: number;
 }
 
 interface MetricsData {
@@ -154,9 +154,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [ctrSeries, setCtrSeries] = useState<TimeSeriesPoint[]>([]);
   const [performanceSeries, setPerformanceSeries] = useState<PerformancePoint[]>([]);
 
-  // Refs
-  const updateIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Add new refs for imported data handling
+  const importedDataBuffer = useRef<BidData[]>([]);
+  const currentDataIndex = useRef<number>(0);
   const isUsingMockData = useRef<boolean>(true);
+  const updateIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Helper functions
   const generateMockBid = useCallback((): BidData => {
@@ -185,7 +187,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isWon,
       campaign,
       executionTime: execTime,
-      performance // Add performance metric
+      performance
     };
   }, []);
 
@@ -264,40 +266,53 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Enhanced time series update with performance tracking
   const updateTimeSeries = useCallback((newBids: BidData[]) => {
+    console.log('Updating time series with bids:', newBids.length);
     const now = Date.now();
     const timeWindow = 5 * 60 * 1000; // 5 minutes window
     const cutoffTime = now - timeWindow;
 
+    // Helper function to update series with proper trimming
+    const updateSeries = <T extends { timestamp: number }>(
+      setter: React.Dispatch<React.SetStateAction<T[]>>,
+      current: T[],
+      newPoints: T[]
+    ) => {
+      const filtered = current.filter(point => point.timestamp > cutoffTime);
+      const combined = [...filtered, ...newPoints].sort((a, b) => a.timestamp - b.timestamp);
+      // Keep only the most recent MAX_DATA_POINTS
+      return combined.slice(-MAX_DATA_POINTS);
+    };
+
     // Update bid price series
     setBidPriceSeries(current => {
-      const filtered = current.filter(point => point.timestamp > cutoffTime);
       const newPoints = newBids.map(bid => ({
         timestamp: bid.timestamp,
         value: bid.bidPrice
       }));
-      return [...filtered, ...newPoints].sort((a, b) => a.timestamp - b.timestamp);
+      return updateSeries(setBidPriceSeries, current, newPoints);
     });
 
     // Update CTR series
     setCtrSeries(current => {
-      const filtered = current.filter(point => point.timestamp > cutoffTime);
       const newPoints = newBids.map(bid => ({
         timestamp: bid.timestamp,
         value: bid.ctr
       }));
-      return [...filtered, ...newPoints].sort((a, b) => a.timestamp - b.timestamp);
+      return updateSeries(setCtrSeries, current, newPoints);
     });
 
     // Update performance series
     setPerformanceSeries(current => {
-      const filtered = current.filter(point => point.timestamp > cutoffTime);
+      console.log('Updating performance series');
       const newPoints = newBids.map(bid => ({
         timestamp: bid.timestamp,
         executionTime: bid.executionTime,
-        performance: bid.performance || 0,
+        performance: bid.performance,
         successRate: bid.isWon ? 1 : 0
       }));
-      return [...filtered, ...newPoints].sort((a, b) => a.timestamp - b.timestamp);
+      const updated = updateSeries(setPerformanceSeries, current, newPoints);
+      console.log('Performance series size:', updated.length);
+      return updated;
     });
   }, []);
 
@@ -388,132 +403,91 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [generateMockBid, isPaused, updateTimeSeries, bidData.length, generateInitialHistory]);
 
-  // Import real data with time series update
-  const importData = useCallback(async (data: string | File | BidData[]) => {
-    try {
-      setIsImporting(true);
-      setIsPaused(true);
+  // Add new function for simulating real-time updates with imported data
+  const simulateImportedDataUpdates = useCallback(() => {
+    if (!importedDataBuffer.current.length) {
+      console.log('No data in buffer');
+      return;
+    }
+
+    const BATCH_SIZE = 3; // Same as mock data generation
+    const newBids: BidData[] = [];
+    const now = Date.now();
+    const firstTimestamp = importedDataBuffer.current[0].timestamp;
+    const lastIndex = importedDataBuffer.current.length - 1;
+
+    console.log('Simulating updates, current index:', currentDataIndex.current, 'of', lastIndex);
+
+    for (let i = 0; i < BATCH_SIZE; i++) {
+      if (currentDataIndex.current >= importedDataBuffer.current.length) {
+        console.log('Resetting index to beginning');
+        currentDataIndex.current = 0;
+      }
+
+      const originalBid = importedDataBuffer.current[currentDataIndex.current];
+      const timeOffset = originalBid.timestamp - firstTimestamp;
       
+      // Create a new bid with updated timestamp
+      const newBid: BidData = {
+        ...originalBid,
+        timestamp: now - (lastIndex - currentDataIndex.current) * UPDATE_INTERVAL,
+        // Regenerate execution time and maintain performance
+        executionTime: originalBid.isWon ? 15 + Math.random() * 5 : 25 + Math.random() * 10
+      };
+
+      newBids.push(newBid);
+      currentDataIndex.current++;
+    }
+
+    if (newBids.length > 0) {
+      console.log('Updating with new bids:', newBids.length);
+      setBidData(current => {
+        const updated = [...current, ...newBids].slice(-MAX_DATA_POINTS);
+        return updated;
+      });
+      updateTimeSeries(newBids);
+    }
+  }, [updateTimeSeries]);
+
+  // Modify the effect that handles data generation
+  useEffect(() => {
+    console.log('Effect triggered - isPaused:', isPaused, 'isUsingMockData:', isUsingMockData.current);
+    
+    if (isPaused) {
       if (updateIntervalRef.current) {
         clearInterval(updateIntervalRef.current);
         updateIntervalRef.current = null;
       }
-
-      let parsedData: BidData[];
-
-      if (Array.isArray(data)) {
-        // If data is already an array of BidData, use it directly
-        parsedData = data;
-      } else {
-        // Handle string or File inputs
-        let fileContent: string;
-        if (data instanceof File) {
-          fileContent = await data.text();
-        } else if (typeof data === 'string') {
-          fileContent = data;
-        } else {
-          throw new Error('Invalid input: expected string, File object, or BidData array');
-        }
-
-        if (!fileContent) {
-          throw new Error('No data to import');
-        }
-
-        const lines = fileContent.trim().split('\n');
-        console.log('Importing data, total lines:', lines.length);
-
-        parsedData = lines
-          .map((line, index) => {
-            try {
-              // Skip empty lines
-              if (!line.trim()) {
-                console.log('Skipping empty line at', index + 1);
-                return null;
-              }
-
-              const parts = line.trim().split(',');
-              if (parts.length !== 5) {
-                console.error('Invalid line format at line', index + 1, ':', line);
-                console.error('Expected 5 parts, got', parts.length);
-                throw new Error('Invalid line format');
-              }
-
-              const [timestamp, adId, bidPrice, ctr, winStatus] = parts;
-              
-              // Parse timestamp (format: YYYYMMDDHHmmssSSS)
-              const ts = timestamp.trim();
-              if (ts.length !== 17) {
-                throw new Error(`Invalid timestamp length: ${ts.length}, expected 17`);
-              }
-
-              const year = ts.substring(0, 4);
-              const month = ts.substring(4, 6);
-              const day = ts.substring(6, 8);
-              const hour = ts.substring(8, 10);
-              const minute = ts.substring(10, 12);
-              const second = ts.substring(12, 14);
-              const millisecond = ts.substring(14);
-              
-              const dateStr = `${year}-${month}-${day}T${hour}:${minute}:${second}.${millisecond}`;
-              const parsedTimestamp = new Date(dateStr).getTime();
-
-              if (isNaN(parsedTimestamp)) {
-                console.error('Invalid timestamp at line', index + 1, ':', timestamp);
-                throw new Error('Invalid timestamp format');
-              }
-
-              const parsedBidPrice = parseFloat(bidPrice.trim());
-              if (isNaN(parsedBidPrice)) {
-                console.error('Invalid bid price at line', index + 1, ':', bidPrice);
-                throw new Error('Invalid bid price format');
-              }
-
-              const parsedCTR = parseFloat(ctr.trim());
-              if (isNaN(parsedCTR)) {
-                console.error('Invalid CTR at line', index + 1, ':', ctr);
-                throw new Error('Invalid CTR format');
-              }
-
-              const bid: BidData = {
-                timestamp: parsedTimestamp,
-                adId: adId.trim(),
-                bidPrice: parsedBidPrice,
-                ctr: parsedCTR,
-                isWon: winStatus.trim() === '1',
-                executionTime: 20 + Math.random() * 10,
-                campaign: 'Imported Campaign'
-              };
-              return bid;
-            } catch (err: unknown) {
-              console.error('Error parsing line', index + 1, ':', line);
-              console.error('Error details:', err);
-              throw new Error(`Failed to parse line ${index + 1}: ${err instanceof Error ? err.message : 'Unknown error'}`);
-            }
-          })
-          .filter((bid): bid is BidData => bid !== null);
-      }
-
-      console.log('Successfully processed', parsedData.length, 'records');
-
-      if (parsedData.length === 0) {
-        throw new Error('No valid data found in the import');
-      }
-
-      isUsingMockData.current = false;
-      const recentData = parsedData.slice(-MAX_DATA_POINTS);
-      setBidData(recentData);
-      updateTimeSeries(recentData);
-      
-      console.log('Import completed successfully');
-      
-    } catch (error: unknown) {
-      console.error('Error importing data:', error);
-      throw new Error(`Failed to import data: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setIsImporting(false);
-      setIsPaused(true);
+      return;
     }
-  }, [updateTimeSeries]);
+
+    // Clear any existing interval
+    if (updateIntervalRef.current) {
+      clearInterval(updateIntervalRef.current);
+      updateIntervalRef.current = null;
+    }
+
+    // Start the appropriate data generation
+    if (isUsingMockData.current) {
+      console.log('Starting mock data generation');
+      startMockDataGeneration();
+    } else {
+      console.log('Starting imported data simulation');
+      // Initial update
+      simulateImportedDataUpdates();
+      // Set up interval for continuous updates
+      updateIntervalRef.current = setInterval(simulateImportedDataUpdates, UPDATE_INTERVAL);
+    }
+
+    // Cleanup function
+    return () => {
+      console.log('Cleaning up interval');
+      if (updateIntervalRef.current) {
+        clearInterval(updateIntervalRef.current);
+        updateIntervalRef.current = null;
+      }
+    };
+  }, [isPaused, startMockDataGeneration, simulateImportedDataUpdates, isUsingMockData]);
 
   // Update metrics and KPIs when bid data changes
   useEffect(() => {
@@ -526,14 +500,115 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setTimeBasedMetrics(newTimeMetrics);
   }, [bidData, calculateMetrics, calculateCampaignKPIs, calculateTimeBasedMetrics]);
 
-  // Handle mock data generation
-  useEffect(() => {
-    if (isUsingMockData.current && !isPaused) {
-      const cleanup = startMockDataGeneration();
-      return cleanup;
+  // Modify the importData function
+  const importData = useCallback(async (data: string | File | BidData[]) => {
+    try {
+      console.log('Starting import process');
+      setIsImporting(true);
+      setIsPaused(true);
+      
+      if (updateIntervalRef.current) {
+        clearInterval(updateIntervalRef.current);
+        updateIntervalRef.current = null;
+      }
+
+      let parsedData: BidData[];
+
+      if (Array.isArray(data)) {
+        parsedData = data;
+      } else {
+        let fileContent: string;
+        if (data instanceof File) {
+          fileContent = await data.text();
+        } else if (typeof data === 'string') {
+          fileContent = data;
+        } else {
+          throw new Error('Invalid input format');
+        }
+
+        const lines = fileContent.trim().split('\n');
+        console.log('Processing', lines.length, 'lines of data');
+        
+        parsedData = lines
+          .map((line, index) => {
+            try {
+              if (!line.trim()) return null;
+
+              const [timestamp, adId, bidPrice, ctr, winStatus] = line.trim().split(',');
+              if (!timestamp || !adId || !bidPrice || !ctr || !winStatus) return null;
+
+              const ts = timestamp.trim();
+              if (ts.length !== 17) return null;
+
+              const parsedTimestamp = new Date(
+                `${ts.slice(0,4)}-${ts.slice(4,6)}-${ts.slice(6,8)}T${ts.slice(8,10)}:${ts.slice(10,12)}:${ts.slice(12,14)}.${ts.slice(14)}`
+              ).getTime();
+
+              if (isNaN(parsedTimestamp)) return null;
+
+              const parsedBidPrice = parseFloat(bidPrice.trim());
+              const parsedCTR = parseFloat(ctr.trim());
+              const winStatusValue = parseFloat(winStatus.trim());
+              const isWon = winStatusValue > 0; // Any value above 0 is a win
+              
+              if (isNaN(parsedBidPrice) || isNaN(parsedCTR) || isNaN(winStatusValue)) return null;
+
+              // Calculate performance based on win status and CTR
+              const winPerformance = isWon ? Math.min(1.0, winStatusValue / 5.0) : 0.0;
+              const ctrPerformance = Math.min(1.0, parsedCTR / 5.0);
+              const performance = (winPerformance * 0.7) + (ctrPerformance * 0.3);
+
+              const bid: BidData = {
+                timestamp: parsedTimestamp,
+                adId: adId.trim(),
+                bidPrice: parsedBidPrice,
+                ctr: parsedCTR,
+                isWon,
+                campaign: 'Imported Campaign',
+                executionTime: isWon ? 15 + Math.random() * 5 : 25 + Math.random() * 10,
+                performance
+              };
+              return bid;
+            } catch (err) {
+              console.error('Error parsing line', index + 1);
+              return null;
+            }
+          })
+          .filter((bid): bid is BidData => bid !== null);
+      }
+
+      if (parsedData.length === 0) {
+        throw new Error('No valid data found');
+      }
+
+      console.log('Successfully parsed', parsedData.length, 'bids');
+
+      // Sort data by timestamp
+      parsedData.sort((a, b) => a.timestamp - b.timestamp);
+      
+      importedDataBuffer.current = parsedData;
+      currentDataIndex.current = 0;
+      isUsingMockData.current = false;
+
+      const initialBatch = parsedData.slice(0, MAX_DATA_POINTS);
+      console.log('Setting initial batch of', initialBatch.length, 'bids');
+      
+      setBidData(initialBatch);
+      updateTimeSeries(initialBatch);
+      
+      // Important: Set isPaused to false after a short delay to ensure state is updated
+      setTimeout(() => {
+        console.log('Starting continuous updates');
+        setIsPaused(false);
+      }, 100);
+      
+    } catch (error) {
+      console.error('Import error:', error);
+      throw error;
+    } finally {
+      setIsImporting(false);
     }
-    return undefined;
-  }, [isPaused, startMockDataGeneration]);
+  }, [updateTimeSeries]);
 
   // Context value with new series data
   const value = {
