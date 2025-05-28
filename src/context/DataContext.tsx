@@ -267,8 +267,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Enhanced time series update with performance tracking
   const updateTimeSeries = useCallback((newBids: BidData[]) => {
     console.log('Updating time series with bids:', newBids.length);
-    const now = Date.now();
-    const timeWindow = 5 * 60 * 1000; // 5 minutes window
 
     // Helper function to update series with proper trimming
     const updateSeries = <T extends { timestamp: number }>(
@@ -409,7 +407,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const BATCH_SIZE = 3; // Same as mock data generation
     const newBids: BidData[] = [];
     const now = Date.now();
-    const firstTimestamp = importedDataBuffer.current[0].timestamp;
     const lastIndex = importedDataBuffer.current.length - 1;
 
     console.log('Simulating updates, current index:', currentDataIndex.current, 'of', lastIndex);
