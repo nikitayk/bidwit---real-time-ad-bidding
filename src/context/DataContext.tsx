@@ -1,15 +1,53 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 
-// Add NodeJS types
-import type { Timeout } from 'node:timers';
+// Constants for demo data
+const UPDATE_INTERVAL = 1000; // 1 second between updates
+const MAX_DATA_POINTS = 50; // Keep last 50 data points for visualization
+const DEMO_CAMPAIGNS = {
+  'Display Ads': { 
+    basePrice: 300, 
+    variance: 50, 
+    avgExecTime: 25,
+    basePerformance: 0.85 // 85% performance baseline
+  },
+  'Search Ads': { 
+    basePrice: 230, 
+    variance: 30, 
+    avgExecTime: 15,
+    basePerformance: 0.92 // 92% performance baseline
+  },
+  'Social Media': { 
+    basePrice: 450, 
+    variance: 40, 
+    avgExecTime: 20,
+    basePerformance: 0.88 // 88% performance baseline
+  }
+};
+
+// Initial metrics state
+const INITIAL_METRICS = {
+  totalBids: 0,
+  winRate: 0,
+  averageCTR: 0,
+  averageBidPrice: 0,
+  activeCampaigns: Object.keys(DEMO_CAMPAIGNS).length,
+  totalBudget: 100000,
+  remainingBudget: 100000,
+  averageExecutionTime: 0,
+  successfulBids: 0,
+  failedBids: 0,
+  totalBidAmount: 0
+};
 
 interface BidData {
   timestamp: number;
+  adId: string;
   bidPrice: number;
-  isWon: boolean;
   ctr: number;
+  isWon: boolean;
   campaign: string;
   executionTime: number;
+  performance?: number;
 }
 
 interface MetricsData {
@@ -24,6 +62,7 @@ interface MetricsData {
   successfulBids: number;
   failedBids: number;
   totalBidAmount: number;
+  averagePerformance?: number;
 }
 
 interface CampaignKPI {
@@ -33,6 +72,44 @@ interface CampaignKPI {
   averageCTR: number;
   totalSpent: number;
   averageBidPrice: number;
+  averageExecutionTime: number;
+  bidVolume: number;
+  successRate: number;
+  recentBids: Array<{
+    timestamp: number;
+    bidPrice: number;
+    executionTime: number;
+    isWon: boolean;
+  }>;
+}
+
+// Add TimeSeriesPoint interface for better type safety
+interface TimeSeriesPoint {
+  timestamp: number;
+  value: number;
+}
+
+interface TimeBasedMetrics {
+  timestamp: number;
+  averageExecutionTime: number;
+  bidCount: number;
+  successRate: number;
+  averageBidPrice: number;
+  averageCTR: number;
+  bidsData: Array<{
+    timestamp: number;
+    bidPrice: number;
+    ctr: number;
+    isWon: boolean;
+  }>;
+}
+
+// Add performance series interface
+interface PerformancePoint {
+  timestamp: number;
+  executionTime: number;
+  performance: number;
+  successRate: number;
 }
 
 interface DataContextType {
@@ -40,7 +117,11 @@ interface DataContextType {
   metrics: MetricsData;
   campaigns: string[];
   campaignKPIs: CampaignKPI[];
-  importData: (data: BidData[]) => Promise<void>;
+  timeBasedMetrics: TimeBasedMetrics[];
+  bidPriceSeries: TimeSeriesPoint[]; // Added for bid price chart
+  ctrSeries: TimeSeriesPoint[]; // Added for CTR chart
+  performanceSeries: PerformancePoint[]; // Added for performance charts
+  importData: (data: string | File | BidData[]) => Promise<void>;
   selectedCampaign: string;
   setSelectedCampaign: (campaign: string) => void;
   dateRange: [Date, Date];
@@ -52,69 +133,13 @@ interface DataContextType {
   isImporting: boolean;
 }
 
-const defaultMetrics: MetricsData = {
-  totalBids: 0,
-  winRate: 0,
-  averageCTR: 0,
-  averageBidPrice: 0,
-  activeCampaigns: 0,
-  totalBudget: 10000,
-  remainingBudget: 10000,
-  averageExecutionTime: 0,
-  successfulBids: 0,
-  failedBids: 0,
-  totalBidAmount: 0,
-};
-
-// Constants for data management - ULTRA SLOW SETTINGS
-const MAX_STORED_BIDS = 20; // Bare minimum stored bids
-const UPDATE_INTERVAL = 120000; // 2 minutes between updates
-const METRICS_UPDATE_DELAY = 15000; // 15 second delay for metrics
-const IMPORT_CHUNK_SIZE = 100; // Tiny import chunks
-const MAX_VISIBLE_POINTS = 5; // Extremely few visible points
-const MIN_UPDATE_INTERVAL = 90000; // Force 90 second minimum between ANY updates
-
-// Demo data configuration with microscopic changes
-const CAMPAIGN_PRICES: { [key: string]: number } = {
-  'Mobile App Campaign': 5,
-  'Website Retargeting': 3,
-  'Social Media Ads': 4
-};
-
-// Microscopic variances for ultra stability
-const PRICE_VARIANCE = 0.01; // Only 1% price variance
-const CTR_VARIANCE = 0.005; // Half percent CTR variance
-const EXEC_TIME_VARIANCE = 2; // Tiny execution time range
-const INITIAL_DEMO_COUNT = 10; // Bare minimum initial points
-const DEMO_WIN_RATE = 0.6; // 60% win rate
-const DEMO_CTR_BASE = 0.02; // 2% base CTR
-
-// Generate initial demo metrics
-const generateDemoMetrics = (): MetricsData => ({
-  totalBids: 0,
-  winRate: 60,
-  averageCTR: 0.04,
-  averageBidPrice: 4,
-  activeCampaigns: Object.keys(CAMPAIGN_PRICES).length,
-  totalBudget: 10000,
-  remainingBudget: 10000,
-  averageExecutionTime: 35,
-  successfulBids: 0,
-  failedBids: 0,
-  totalBidAmount: 0,
-});
-
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Add ref to track data source
-  const isUsingMockData = useRef<boolean>(true);
-  const updateIntervalRef = useRef<number | null>(null);
-  
-  // State declarations with demo data
-  const [activeBidData, setActiveBidData] = useState<BidData[]>([]);
-  const [metrics, setMetrics] = useState<MetricsData>(generateDemoMetrics());
-  const [campaigns, setCampaigns] = useState<string[]>(Object.keys(CAMPAIGN_PRICES));
+  // State
+  const [bidData, setBidData] = useState<BidData[]>([]);
+  const [metrics, setMetrics] = useState<MetricsData>(INITIAL_METRICS);
+  const [campaigns] = useState<string[]>(Object.keys(DEMO_CAMPAIGNS));
   const [campaignKPIs, setCampaignKPIs] = useState<CampaignKPI[]>([]);
   const [selectedCampaign, setSelectedCampaign] = useState<string>('all');
   const [dateRange, setDateRange] = useState<[Date, Date]>([
@@ -122,307 +147,238 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     new Date()
   ]);
   const [nFactor, setNFactor] = useState<number>(1);
+  const [isPaused, setIsPaused] = useState(true);
   const [isImporting, setIsImporting] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
+  const [timeBasedMetrics, setTimeBasedMetrics] = useState<TimeBasedMetrics[]>([]);
+  const [bidPriceSeries, setBidPriceSeries] = useState<TimeSeriesPoint[]>([]);
+  const [ctrSeries, setCtrSeries] = useState<TimeSeriesPoint[]>([]);
+  const [performanceSeries, setPerformanceSeries] = useState<PerformancePoint[]>([]);
 
   // Refs
-  const cleanupRef = useRef<(() => void) | null>(null);
-  const metricsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const historicalDataRef = useRef<BidData[]>([]);
+  const updateIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const isUsingMockData = useRef<boolean>(true);
 
-  // Add throttle time tracking
-  const lastUpdateRef = useRef<number>(Date.now());
-
-  // Campaign KPIs calculation
-  const calculateCampaignKPIs = useCallback((data: BidData[]) => {
-    const campaignStats = data.reduce((acc, bid) => {
-      if (!acc[bid.campaign]) {
-        acc[bid.campaign] = {
-          totalBids: 0,
-          wonBids: 0,
-          totalCTR: 0,
-          totalSpent: 0,
-          totalBidPrice: 0
-        };
-      }
-      
-      const stats = acc[bid.campaign];
-      stats.totalBids++;
-      stats.wonBids += bid.isWon ? 1 : 0;
-      stats.totalCTR += bid.ctr;
-      stats.totalSpent += bid.isWon ? bid.bidPrice : 0;
-      stats.totalBidPrice += bid.bidPrice;
-      
-      return acc;
-    }, {} as Record<string, {
-      totalBids: number;
-      wonBids: number;
-      totalCTR: number;
-      totalSpent: number;
-      totalBidPrice: number;
-    }>);
-
-    return Object.entries(campaignStats).map(([name, stats]) => ({
-      name,
-      totalBids: stats.totalBids,
-      winRate: (stats.wonBids / stats.totalBids) * 100,
-      averageCTR: stats.totalCTR / stats.totalBids,
-      totalSpent: stats.totalSpent,
-      averageBidPrice: stats.totalBidPrice / stats.totalBids,
-    }));
+  // Helper functions
+  const generateMockBid = useCallback((): BidData => {
+    const campaigns = Object.keys(DEMO_CAMPAIGNS);
+    const campaign = campaigns[Math.floor(Math.random() * campaigns.length)] as keyof typeof DEMO_CAMPAIGNS;
+    const { basePrice, variance, avgExecTime, basePerformance } = DEMO_CAMPAIGNS[campaign];
+    
+    // Calculate performance metrics
+    const timeVariance = 10;
+    const execTime = avgExecTime + (Math.random() * 2 - 1) * timeVariance;
+    const performanceVariance = 0.1; // 10% variance in performance
+    const performance = Math.min(1, Math.max(0.5, basePerformance + (Math.random() * 2 - 1) * performanceVariance));
+    const winProbability = performance * 0.8; // Performance affects win probability
+    const isWon = Math.random() < winProbability;
+    
+    // CTR is affected by performance
+    const baseCTR = 5; // 5% base CTR
+    const ctrVariance = 2; // ±2% variance
+    const ctr = baseCTR * performance + (Math.random() * 2 - 1) * ctrVariance;
+    
+    return {
+      timestamp: Date.now(),
+      adId: Math.random().toString(36).substring(2, 15),
+      bidPrice: basePrice + (Math.random() * 2 - 1) * variance,
+      ctr,
+      isWon,
+      campaign,
+      executionTime: execTime,
+      performance // Add performance metric
+    };
   }, []);
 
-  // Metrics calculations
   const calculateMetrics = useCallback((data: BidData[]) => {
-    if (data.length === 0) return defaultMetrics;
-
-    const {
-      wonBids,
-      totalCTR,
-      totalBidPrice,
-      uniqueCampaigns,
-      totalExecutionTime,
-      spentBudget
-    } = data.reduce((acc, bid) => ({
-      wonBids: acc.wonBids + (bid.isWon ? 1 : 0),
-      totalCTR: acc.totalCTR + bid.ctr,
-      totalBidPrice: acc.totalBidPrice + bid.bidPrice,
-      uniqueCampaigns: acc.uniqueCampaigns.add(bid.campaign),
-      totalExecutionTime: acc.totalExecutionTime + bid.executionTime,
-      spentBudget: acc.spentBudget + (bid.isWon ? bid.bidPrice : 0)
-    }), {
-      wonBids: 0,
-      totalCTR: 0,
-      totalBidPrice: 0,
-      uniqueCampaigns: new Set<string>(),
-      totalExecutionTime: 0,
-      spentBudget: 0
-    });
+    if (data.length === 0) return INITIAL_METRICS;
 
     const totalBids = data.length;
+    const wonBids = data.filter(bid => bid.isWon).length;
+    const totalBidAmount = data.reduce((sum, bid) => sum + bid.bidPrice, 0);
+    const totalCTR = data.reduce((sum, bid) => sum + bid.ctr, 0);
+    const spentAmount = data.reduce((sum, bid) => sum + (bid.isWon ? bid.bidPrice : 0), 0);
+    const totalExecTime = data.reduce((sum, bid) => sum + bid.executionTime, 0);
+    const totalPerformance = data.reduce((sum, bid) => sum + (bid.performance || 0), 0);
 
     return {
       totalBids,
       winRate: (wonBids / totalBids) * 100,
       averageCTR: totalCTR / totalBids,
-      averageBidPrice: totalBidPrice / totalBids,
-      activeCampaigns: uniqueCampaigns.size,
-      totalBudget: defaultMetrics.totalBudget,
-      remainingBudget: defaultMetrics.totalBudget - spentBudget,
-      averageExecutionTime: totalExecutionTime / totalBids,
+      averageBidPrice: totalBidAmount / totalBids,
+      activeCampaigns: Object.keys(DEMO_CAMPAIGNS).length,
+      totalBudget: INITIAL_METRICS.totalBudget,
+      remainingBudget: INITIAL_METRICS.totalBudget - spentAmount,
+      averageExecutionTime: totalExecTime / totalBids,
       successfulBids: wonBids,
       failedBids: totalBids - wonBids,
-      totalBidAmount: totalBidPrice,
+      totalBidAmount,
+      averagePerformance: totalPerformance / totalBids
     };
   }, []);
 
-  // Ultra-throttled metrics update with huge delays
-  const updateMetrics = useCallback((data: BidData[]) => {
+  const calculateCampaignKPIs = useCallback((data: BidData[]) => {
+    const campaignData: { [key: string]: BidData[] } = {};
+    
+    data.forEach(bid => {
+      const campaign = bid.campaign || 'Unknown';
+      if (!campaignData[campaign]) {
+        campaignData[campaign] = [];
+      }
+      campaignData[campaign].push(bid);
+    });
+
+    return Object.entries(campaignData).map(([name, bids]) => {
+      const totalBids = bids.length;
+      const wonBids = bids.filter(bid => bid.isWon).length;
+      const totalSpent = bids.reduce((sum, bid) => sum + (bid.isWon ? bid.bidPrice : 0), 0);
+      const totalBidPrice = bids.reduce((sum, bid) => sum + bid.bidPrice, 0);
+      const totalCTR = bids.reduce((sum, bid) => sum + bid.ctr, 0);
+      const totalExecTime = bids.reduce((sum, bid) => sum + bid.executionTime, 0);
+
+      const sortedBids = [...bids].sort((a, b) => b.timestamp - a.timestamp);
+      const last10Bids = sortedBids.slice(0, 10);
+
+      const successRate = (wonBids / totalBids) * 100;
+
+      const recentBids = last10Bids.map(bid => ({
+        timestamp: bid.timestamp,
+        bidPrice: bid.bidPrice,
+        executionTime: bid.executionTime,
+        isWon: bid.isWon
+      }));
+
+      return {
+        name,
+        totalBids,
+        winRate: (wonBids / totalBids) * 100,
+        averageCTR: totalCTR / totalBids,
+        totalSpent,
+        averageBidPrice: totalBidPrice / totalBids,
+        averageExecutionTime: totalExecTime / totalBids,
+        bidVolume: totalBids,
+        successRate,
+        recentBids
+      };
+    });
+  }, []);
+
+  // Enhanced time series update with performance tracking
+  const updateTimeSeries = useCallback((newBids: BidData[]) => {
     const now = Date.now();
-    
-    // Extreme throttling
-    if (now - lastUpdateRef.current < MIN_UPDATE_INTERVAL) {
-      console.log('Update skipped - enforcing long delay');
-      return;
-    }
+    const timeWindow = 5 * 60 * 1000; // 5 minutes window
+    const cutoffTime = now - timeWindow;
 
-    if (metricsTimeoutRef.current) {
-      clearTimeout(metricsTimeoutRef.current);
-    }
+    // Update bid price series
+    setBidPriceSeries(current => {
+      const filtered = current.filter(point => point.timestamp > cutoffTime);
+      const newPoints = newBids.map(bid => ({
+        timestamp: bid.timestamp,
+        value: bid.bidPrice
+      }));
+      return [...filtered, ...newPoints].sort((a, b) => a.timestamp - b.timestamp);
+    });
 
-    lastUpdateRef.current = now;
+    // Update CTR series
+    setCtrSeries(current => {
+      const filtered = current.filter(point => point.timestamp > cutoffTime);
+      const newPoints = newBids.map(bid => ({
+        timestamp: bid.timestamp,
+        value: bid.ctr
+      }));
+      return [...filtered, ...newPoints].sort((a, b) => a.timestamp - b.timestamp);
+    });
 
-    // Initial delay before any processing
-    setTimeout(() => {
-      metricsTimeoutRef.current = setTimeout(() => {
-        // Take absolute minimum points
-        const recentData = data.slice(-MAX_VISIBLE_POINTS);
-        
-        const metrics = calculateMetrics(data);
-        const kpis = calculateCampaignKPIs(data);
-        
-        // Multiple layers of delays
-        setTimeout(() => {
-          setTimeout(() => {
-            requestAnimationFrame(() => {
-              setMetrics(prev => ({
-                ...metrics,
-                // Ultra-smooth transitions (98% previous, 2% new)
-                averageBidPrice: prev.averageBidPrice * 0.98 + metrics.averageBidPrice * 0.02,
-                winRate: prev.winRate * 0.98 + metrics.winRate * 0.02,
-                averageCTR: prev.averageCTR * 0.98 + metrics.averageCTR * 0.02,
-                averageExecutionTime: prev.averageExecutionTime * 0.98 + metrics.averageExecutionTime * 0.02,
-                // Strictly limited counts
-                totalBids: Math.min(metrics.totalBids, MAX_STORED_BIDS),
-                successfulBids: Math.min(metrics.successfulBids, MAX_STORED_BIDS),
-                failedBids: Math.min(metrics.failedBids, MAX_STORED_BIDS),
-                totalBidAmount: Math.round(metrics.totalBidAmount * 100) / 100,
-                remainingBudget: Math.round(metrics.remainingBudget * 100) / 100,
-                totalBudget: metrics.totalBudget,
-                activeCampaigns: metrics.activeCampaigns
-              }));
-              
-              // Super delayed KPI updates
-              setTimeout(() => {
-                setCampaignKPIs(kpis);
-              }, 3000);
-            });
-          }, 2000);
-        }, 2000);
-      }, METRICS_UPDATE_DELAY);
-    }, 3000);
-  }, [calculateMetrics, calculateCampaignKPIs]);
-
-  // Extremely slow data addition with multiple delays
-  const addNewData = useCallback((newData: BidData[]) => {
-    // Multiple layers of delay
-    setTimeout(() => {
-      setTimeout(() => {
-        setActiveBidData(currentData => {
-          const combinedData = [...currentData, ...newData].slice(-MAX_STORED_BIDS);
-          return combinedData;
-        });
-      }, 3000);
-    }, 3000);
+    // Update performance series
+    setPerformanceSeries(current => {
+      const filtered = current.filter(point => point.timestamp > cutoffTime);
+      const newPoints = newBids.map(bid => ({
+        timestamp: bid.timestamp,
+        executionTime: bid.executionTime,
+        performance: bid.performance || 0,
+        successRate: bid.isWon ? 1 : 0
+      }));
+      return [...filtered, ...newPoints].sort((a, b) => a.timestamp - b.timestamp);
+    });
   }, []);
 
-  // Ultra-slow demo bid generation with tiny changes
-  const generateDemoBid = useCallback((lastTimestamp: number): BidData => {
-    const campaign = campaigns[Math.floor(Math.random() * campaigns.length)];
-    const basePrice = CAMPAIGN_PRICES[campaign] || 4;
+  // Enhanced time-based metrics calculation
+  const calculateTimeBasedMetrics = useCallback((data: BidData[]) => {
+    const sortedData = [...data].sort((a, b) => a.timestamp - b.timestamp);
     
-    // Microscopic changes
-    const priceChange = (Math.random() * 2 - 1) * basePrice * PRICE_VARIANCE;
-    
-    return {
-      timestamp: lastTimestamp + UPDATE_INTERVAL,
-      bidPrice: Math.round((basePrice + priceChange) * nFactor * 100) / 100,
-      isWon: Math.random() < 0.6,
-      ctr: Number((DEMO_CTR_BASE + (Math.random() * CTR_VARIANCE)).toFixed(4)),
-      campaign,
-      executionTime: Math.round(30 + Math.random() * EXEC_TIME_VARIANCE),
-    };
-  }, [campaigns, nFactor]);
-
-  // Cleanup function to clear all intervals and timeouts
-  const cleanupAllIntervals = useCallback(() => {
-    if (updateIntervalRef.current) {
-      clearInterval(updateIntervalRef.current);
-      updateIntervalRef.current = null;
-    }
-    if (metricsTimeoutRef.current) {
-      clearTimeout(metricsTimeoutRef.current);
-      metricsTimeoutRef.current = null;
-    }
-    if (cleanupRef.current) {
-      cleanupRef.current();
-      cleanupRef.current = null;
-    }
-  }, []);
-
-  // Data import with proper cleanup
-  const importData = useCallback(async (newData: BidData[]) => {
-    try {
-      setIsImporting(true);
-      setIsPaused(true);
-      
-      // Stop all existing updates
-      cleanupAllIntervals();
-      
-      // Clear all existing data
-      setActiveBidData([]);
-      historicalDataRef.current = [];
-      setMetrics(generateDemoMetrics());
-      setCampaignKPIs([]);
-      
-      // Mark that we're using imported data
-      isUsingMockData.current = false;
-
-      // Process imported data in very small chunks
-      const chunks = Math.ceil(newData.length / IMPORT_CHUNK_SIZE);
-      for (let i = 0; i < chunks; i++) {
-        const start = i * IMPORT_CHUNK_SIZE;
-        const end = Math.min(start + IMPORT_CHUNK_SIZE, newData.length);
-        const chunk = newData.slice(start, end);
-        
-        await new Promise<void>(resolve => {
-          setTimeout(() => {
-            requestAnimationFrame(() => {
-              addNewData(chunk);
-              if (i === chunks - 1) {
-                const finalMetrics = calculateMetrics(chunk);
-                const finalKPIs = calculateCampaignKPIs(chunk);
-                setMetrics(finalMetrics);
-                setCampaignKPIs(finalKPIs);
-              }
-              resolve();
-            });
-          }, 2000); // 2 second delay between chunks
-        });
+    const minuteGroups: { [key: string]: BidData[] } = {};
+    sortedData.forEach(bid => {
+      const minute = new Date(bid.timestamp).setSeconds(0, 0);
+      if (!minuteGroups[minute]) {
+        minuteGroups[minute] = [];
       }
+      minuteGroups[minute].push(bid);
+    });
 
-      // Update campaigns from imported data
-      const uniqueCampaigns = new Set(newData.map(bid => bid.campaign));
-      setCampaigns(Array.from(uniqueCampaigns));
+    return Object.entries(minuteGroups).map(([timestamp, bids]) => ({
+      timestamp: parseInt(timestamp),
+      averageExecutionTime: bids.reduce((sum, bid) => sum + bid.executionTime, 0) / bids.length,
+      bidCount: bids.length,
+      successRate: (bids.filter(bid => bid.isWon).length / bids.length) * 100,
+      averageBidPrice: bids.reduce((sum, bid) => sum + bid.bidPrice, 0) / bids.length,
+      averageCTR: bids.reduce((sum, bid) => sum + bid.ctr, 0) / bids.length,
+      bidsData: bids.map(bid => ({
+        timestamp: bid.timestamp,
+        bidPrice: bid.bidPrice,
+        ctr: bid.ctr,
+        isWon: bid.isWon
+      }))
+    }));
+  }, []);
 
-    } catch (error) {
-      console.error('Error importing data:', error);
-      throw new Error('Failed to import data');
-    } finally {
-      setIsImporting(false);
-      setIsPaused(true); // Keep paused after import
+  // Generate initial historical data
+  const generateInitialHistory = useCallback(() => {
+    const now = Date.now();
+    const historyWindow = 5 * 60 * 1000; // 5 minutes of history
+    const pointCount = 30; // 30 initial points
+    const timeStep = historyWindow / pointCount;
+
+    const historicalBids = Array(pointCount).fill(null).map((_, index) => {
+      const historicalBid = generateMockBid();
+      // Override timestamp to create historical sequence
+      historicalBid.timestamp = now - (pointCount - index) * timeStep;
+      return historicalBid;
+    });
+
+    return historicalBids;
+  }, [generateMockBid]);
+
+  // Initialize with historical data
+  useEffect(() => {
+    if (isUsingMockData.current && bidData.length === 0) {
+      const initialHistory = generateInitialHistory();
+      setBidData(initialHistory);
+      updateTimeSeries(initialHistory);
     }
-  }, [addNewData, calculateMetrics, calculateCampaignKPIs, cleanupAllIntervals]);
+  }, [generateInitialHistory, updateTimeSeries]);
 
-  // Glacially slow real-time updates
-  const startRealTimeUpdates = useCallback(() => {
-    if (isImporting || isPaused || !isUsingMockData.current) return () => {};
+  // Mock data generation with batch updates and immediate time series update
+  const startMockDataGeneration = useCallback(() => {
+    if (!isUsingMockData.current || isPaused) return;
 
-    // Clear any existing interval
-    if (updateIntervalRef.current) {
-      clearInterval(updateIntervalRef.current);
+    // If no data exists, generate initial history
+    if (bidData.length === 0) {
+      const initialHistory = generateInitialHistory();
+      setBidData(initialHistory);
+      updateTimeSeries(initialHistory);
     }
 
-    let lastUpdate = Date.now();
+    const BATCH_SIZE = 3; // Generate 3 bids per update
+
     updateIntervalRef.current = setInterval(() => {
-      const now = Date.now();
+      const newBids = Array(BATCH_SIZE).fill(null).map(() => generateMockBid());
       
-      // Multiple levels of aggressive throttling
-      if (document.hidden || now - lastUpdate < MIN_UPDATE_INTERVAL) {
-        console.log('Update skipped - enforcing long delay');
-        return;
-      }
+      setBidData(current => {
+        const updated = [...current, ...newBids].slice(-MAX_DATA_POINTS);
+        return updated;
+      });
 
-      lastUpdate = now;
-
-      // Multiple layers of delays
-      setTimeout(() => {
-        setTimeout(() => {
-          setTimeout(() => {
-            if (!isUsingMockData.current) {
-              console.log('Skipping mock update - using imported data');
-              return;
-            }
-            requestAnimationFrame(() => {
-              const lastTimestamp = activeBidData[activeBidData.length - 1]?.timestamp || Date.now();
-              const newBid = generateDemoBid(lastTimestamp);
-              
-              // Add single bid with multiple delays
-              setTimeout(() => {
-                if (!isUsingMockData.current) return;
-                addNewData([newBid]);
-                
-                // Super delayed metrics update
-                setTimeout(() => {
-                  if (!isUsingMockData.current) return;
-                  const recentData = [...activeBidData.slice(-MAX_VISIBLE_POINTS), newBid];
-                  updateMetrics(recentData);
-                }, 5000);
-              }, 3000);
-            });
-          }, 2000);
-        }, 2000);
-      }, 2000);
+      // Immediately update time series with new bids
+      updateTimeSeries(newBids);
     }, UPDATE_INTERVAL);
 
     return () => {
@@ -430,66 +386,165 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         clearInterval(updateIntervalRef.current);
       }
     };
-  }, [isImporting, isPaused, activeBidData, addNewData, generateDemoBid, updateMetrics]);
+  }, [generateMockBid, isPaused, updateTimeSeries, bidData.length, generateInitialHistory]);
 
-  // Initialize with fewer demo records - MOVED UP
-  const generateInitialDemoData = useCallback((count: number): BidData[] => {
-    const now = Date.now();
-    const availableCampaigns = Object.keys(CAMPAIGN_PRICES);
-    
-    return Array.from({ length: count }, (_, i) => {
-      const campaign = availableCampaigns[Math.floor(Math.random() * availableCampaigns.length)];
-      const basePrice = CAMPAIGN_PRICES[campaign];
-      const priceChange = (Math.random() * 2 - 1) * basePrice * PRICE_VARIANCE;
+  // Import real data with time series update
+  const importData = useCallback(async (data: string | File | BidData[]) => {
+    try {
+      setIsImporting(true);
+      setIsPaused(true);
       
-      // Spread over 7 days with bigger gaps
-      const timeGap = Math.floor(7 * 24 * 60 * 60 * 1000 / count);
-      const timestamp = now - (count - i) * timeGap;
-      
-      return {
-        timestamp,
-        bidPrice: basePrice + priceChange,
-        isWon: Math.random() < 0.6,
-        ctr: DEMO_CTR_BASE + (Math.random() * CTR_VARIANCE),
-        campaign,
-        executionTime: 30 + Math.random() * EXEC_TIME_VARIANCE,
-      };
-    });
-  }, []);
+      if (updateIntervalRef.current) {
+        clearInterval(updateIntervalRef.current);
+        updateIntervalRef.current = null;
+      }
 
-  // Initialize demo data with proper cleanup
+      let parsedData: BidData[];
+
+      if (Array.isArray(data)) {
+        // If data is already an array of BidData, use it directly
+        parsedData = data;
+      } else {
+        // Handle string or File inputs
+        let fileContent: string;
+        if (data instanceof File) {
+          fileContent = await data.text();
+        } else if (typeof data === 'string') {
+          fileContent = data;
+        } else {
+          throw new Error('Invalid input: expected string, File object, or BidData array');
+        }
+
+        if (!fileContent) {
+          throw new Error('No data to import');
+        }
+
+        const lines = fileContent.trim().split('\n');
+        console.log('Importing data, total lines:', lines.length);
+
+        parsedData = lines
+          .map((line, index) => {
+            try {
+              // Skip empty lines
+              if (!line.trim()) {
+                console.log('Skipping empty line at', index + 1);
+                return null;
+              }
+
+              const parts = line.trim().split(',');
+              if (parts.length !== 5) {
+                console.error('Invalid line format at line', index + 1, ':', line);
+                console.error('Expected 5 parts, got', parts.length);
+                throw new Error('Invalid line format');
+              }
+
+              const [timestamp, adId, bidPrice, ctr, winStatus] = parts;
+              
+              // Parse timestamp (format: YYYYMMDDHHmmssSSS)
+              const ts = timestamp.trim();
+              if (ts.length !== 17) {
+                throw new Error(`Invalid timestamp length: ${ts.length}, expected 17`);
+              }
+
+              const year = ts.substring(0, 4);
+              const month = ts.substring(4, 6);
+              const day = ts.substring(6, 8);
+              const hour = ts.substring(8, 10);
+              const minute = ts.substring(10, 12);
+              const second = ts.substring(12, 14);
+              const millisecond = ts.substring(14);
+              
+              const dateStr = `${year}-${month}-${day}T${hour}:${minute}:${second}.${millisecond}`;
+              const parsedTimestamp = new Date(dateStr).getTime();
+
+              if (isNaN(parsedTimestamp)) {
+                console.error('Invalid timestamp at line', index + 1, ':', timestamp);
+                throw new Error('Invalid timestamp format');
+              }
+
+              const parsedBidPrice = parseFloat(bidPrice.trim());
+              if (isNaN(parsedBidPrice)) {
+                console.error('Invalid bid price at line', index + 1, ':', bidPrice);
+                throw new Error('Invalid bid price format');
+              }
+
+              const parsedCTR = parseFloat(ctr.trim());
+              if (isNaN(parsedCTR)) {
+                console.error('Invalid CTR at line', index + 1, ':', ctr);
+                throw new Error('Invalid CTR format');
+              }
+
+              const bid: BidData = {
+                timestamp: parsedTimestamp,
+                adId: adId.trim(),
+                bidPrice: parsedBidPrice,
+                ctr: parsedCTR,
+                isWon: winStatus.trim() === '1',
+                executionTime: 20 + Math.random() * 10,
+                campaign: 'Imported Campaign'
+              };
+              return bid;
+            } catch (err: unknown) {
+              console.error('Error parsing line', index + 1, ':', line);
+              console.error('Error details:', err);
+              throw new Error(`Failed to parse line ${index + 1}: ${err instanceof Error ? err.message : 'Unknown error'}`);
+            }
+          })
+          .filter((bid): bid is BidData => bid !== null);
+      }
+
+      console.log('Successfully processed', parsedData.length, 'records');
+
+      if (parsedData.length === 0) {
+        throw new Error('No valid data found in the import');
+      }
+
+      isUsingMockData.current = false;
+      const recentData = parsedData.slice(-MAX_DATA_POINTS);
+      setBidData(recentData);
+      updateTimeSeries(recentData);
+      
+      console.log('Import completed successfully');
+      
+    } catch (error: unknown) {
+      console.error('Error importing data:', error);
+      throw new Error(`Failed to import data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsImporting(false);
+      setIsPaused(true);
+    }
+  }, [updateTimeSeries]);
+
+  // Update metrics and KPIs when bid data changes
   useEffect(() => {
-    const initializeDemoData = () => {
-      // Only initialize if we're using mock data
-      if (!isUsingMockData.current) return;
-      
-      const demoData = generateInitialDemoData(INITIAL_DEMO_COUNT);
-      setActiveBidData(demoData);
-      
-      const initialKPIs = calculateCampaignKPIs(demoData);
-      setCampaignKPIs(initialKPIs);
-      
-      const initialMetrics = calculateMetrics(demoData);
-      setMetrics(initialMetrics);
-      
-      // Start real-time updates
-      cleanupRef.current = startRealTimeUpdates();
-    };
-
-    cleanupAllIntervals();
-    initializeDemoData();
+    const newMetrics = calculateMetrics(bidData);
+    const newKPIs = calculateCampaignKPIs(bidData);
+    const newTimeMetrics = calculateTimeBasedMetrics(bidData);
     
-    return () => {
-      cleanupAllIntervals();
-    };
-  }, [generateInitialDemoData, calculateCampaignKPIs, calculateMetrics, startRealTimeUpdates, cleanupAllIntervals]);
+    setMetrics(newMetrics);
+    setCampaignKPIs(newKPIs);
+    setTimeBasedMetrics(newTimeMetrics);
+  }, [bidData, calculateMetrics, calculateCampaignKPIs, calculateTimeBasedMetrics]);
 
-  // Context value
-  const contextValue = useMemo(() => ({
-    bidData: activeBidData,
+  // Handle mock data generation
+  useEffect(() => {
+    if (isUsingMockData.current && !isPaused) {
+      const cleanup = startMockDataGeneration();
+      return cleanup;
+    }
+    return undefined;
+  }, [isPaused, startMockDataGeneration]);
+
+  // Context value with new series data
+  const value = {
+    bidData,
     metrics,
     campaigns,
     campaignKPIs,
+    timeBasedMetrics,
+    bidPriceSeries,
+    ctrSeries,
+    performanceSeries,
     importData,
     selectedCampaign,
     setSelectedCampaign,
@@ -499,22 +554,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setNFactor,
     isPaused,
     setIsPaused,
-    isImporting,
-  }), [
-    activeBidData,
-    metrics,
-    campaigns,
-    campaignKPIs,
-    importData,
-    selectedCampaign,
-    dateRange,
-    nFactor,
-    isPaused,
     isImporting
-  ]);
+  };
 
   return (
-    <DataContext.Provider value={contextValue}>
+    <DataContext.Provider value={value}>
       {children}
     </DataContext.Provider>
   );
@@ -526,4 +570,4 @@ export const useData = () => {
     throw new Error('useData must be used within a DataProvider');
   }
   return context;
-}; 
+};
