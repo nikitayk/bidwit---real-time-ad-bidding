@@ -9,6 +9,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    dedupe: ['react', 'react-dom'],
   },
   server: {
     port: 3000,
@@ -17,19 +18,25 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true
+    },
     rollupOptions: {
+      external: ['react', 'react-dom'],
       output: {
+        globals: {
+          react: 'React',
+          'react-dom': 'ReactDOM'
+        },
         manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'chart-vendor': ['chart.js', 'react-chartjs-2'],
-          'ui-vendor': ['react-window', 'react-virtualized-auto-sizer'],
-          'icons': ['react-icons'],
+          vendor: ['chart.js', 'react-chartjs-2', 'react-window', 'react-virtualized-auto-sizer', 'react-icons'],
         },
       },
     },
     chunkSizeWarningLimit: 1000,
     minify: 'esbuild',
-    target: 'esnext',
+    target: 'es2015'
   },
   optimizeDeps: {
     include: [
@@ -41,7 +48,7 @@ export default defineConfig({
       'react-virtualized-auto-sizer'
     ],
     esbuildOptions: {
-      target: 'esnext'
+      target: 'es2015'
     }
   },
 }) 
