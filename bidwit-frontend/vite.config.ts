@@ -15,23 +15,19 @@ export default defineConfig({
     }),
     react()
   ],
+  base: '/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-    },
-    dedupe: ['react', 'react-dom'],
-  },
-  server: {
-    port: 3000,
-    open: true,
+    }
   },
   build: {
     outDir: 'dist',
-    sourcemap: false,
+    assetsDir: 'assets',
+    emptyOutDir: true,
+    sourcemap: true,
     rollupOptions: {
-      input: {
-        main: path.resolve(__dirname, 'index.html'),
-      },
+      input: path.resolve(__dirname, 'index.html'),
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
@@ -40,11 +36,12 @@ export default defineConfig({
             }
             return 'vendor';
           }
-        }
+        },
+        entryFileNames: 'assets/[name].[hash].js',
+        chunkFileNames: 'assets/[name].[hash].js',
+        assetFileNames: 'assets/[name].[hash].[ext]'
       }
     },
-    chunkSizeWarningLimit: 1000,
-    minify: 'esbuild',
     target: 'es2015'
   },
   optimizeDeps: {
@@ -57,4 +54,14 @@ export default defineConfig({
       target: 'es2015'
     }
   },
+  server: {
+    port: 3000,
+    strictPort: true,
+    host: true
+  },
+  preview: {
+    port: 3000,
+    strictPort: true,
+    host: true
+  }
 }) 
