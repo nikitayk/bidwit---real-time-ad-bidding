@@ -3,8 +3,12 @@
 @tailwind utilities;
 
 @layer base {
+  html, body, #root {
+    @apply min-h-screen;
+  }
+  
   body {
-    @apply bg-dark-bg-primary text-dark-text-primary;
+    @apply bg-white text-gray-900 dark:bg-dark-bg-primary dark:text-dark-text-primary;
   }
 }
 

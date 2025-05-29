@@ -13,7 +13,7 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-dark-bg-primary text-dark-text-primary">
+      <div className="min-h-screen bg-white dark:bg-dark-bg-primary text-gray-900 dark:text-dark-text-primary">
         <ToastContainer
           position="top-right"
           autoClose={3000}

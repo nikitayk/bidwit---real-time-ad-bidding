@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import {
@@ -26,7 +26,7 @@ function Layout() {
   };
 
   return (
-    <div className="h-screen flex">
+    <div className="min-h-screen flex bg-gray-100 dark:bg-dark-bg-primary">
       {/* Mobile sidebar */}
       <Transition.Root show={sidebarOpen} as={Fragment}>
         <Dialog
@@ -54,7 +54,7 @@ function Layout() {
             leaveFrom="translate-x-0"
             leaveTo="-translate-x-full"
           >
-            <div className="relative flex-1 flex flex-col max-w-xs w-full bg-dark-bg-secondary">
+            <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white dark:bg-dark-bg-secondary">
               <Transition.Child
                 as={Fragment}
                 enter="ease-in-out duration-300"
@@ -88,10 +88,10 @@ function Layout() {
                     <a
                       key={item.name}
                       href={item.href}
-                      className="group flex items-center px-2 py-2 text-base font-medium rounded-md text-dark-text-primary hover:bg-dark-bg-tertiary"
+                      className="group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-900 dark:text-dark-text-primary hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary"
                     >
                       <item.icon
-                        className="mr-4 h-6 w-6 text-dark-text-secondary"
+                        className="mr-4 h-6 w-6 text-gray-500 dark:text-dark-text-secondary"
                         aria-hidden="true"
                       />
                       {item.name}
@@ -99,11 +99,11 @@ function Layout() {
                   ))}
                 </nav>
               </div>
-              <div className="flex-shrink-0 flex border-t border-dark-border p-4">
+              <div className="flex-shrink-0 flex border-t border-gray-200 dark:border-dark-border p-4">
                 <Menu as="div" className="relative inline-block text-left w-full">
-                  <Menu.Button className="group w-full flex items-center px-2 py-2 text-base font-medium rounded-md text-dark-text-primary hover:bg-dark-bg-tertiary">
+                  <Menu.Button className="group w-full flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-900 dark:text-dark-text-primary hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary">
                     <UserCircleIcon
-                      className="mr-4 h-6 w-6 text-dark-text-secondary"
+                      className="mr-4 h-6 w-6 text-gray-500 dark:text-dark-text-secondary"
                       aria-hidden="true"
                     />
                     {user?.name || 'User'}
@@ -117,15 +117,15 @@ function Layout() {
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95"
                   >
-                    <Menu.Items className="absolute bottom-full left-0 w-56 mb-2 rounded-md shadow-lg bg-dark-bg-tertiary ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <Menu.Items className="absolute bottom-full left-0 w-56 mb-2 rounded-md shadow-lg bg-white dark:bg-dark-bg-tertiary ring-1 ring-black ring-opacity-5 focus:outline-none">
                       <div className="py-1">
                         <Menu.Item>
                           {({ active }) => (
                             <button
                               onClick={handleLogout}
                               className={`${
-                                active ? 'bg-dark-bg-primary' : ''
-                              } block w-full text-left px-4 py-2 text-sm text-dark-text-primary`}
+                                active ? 'bg-gray-100 dark:bg-dark-bg-primary' : ''
+                              } block w-full text-left px-4 py-2 text-sm text-gray-900 dark:text-dark-text-primary`}
                             >
                               Sign out
                             </button>
@@ -145,7 +145,7 @@ function Layout() {
       {/* Desktop sidebar */}
       <div className="hidden md:flex md:flex-shrink-0">
         <div className="flex flex-col w-64">
-          <div className="flex-1 flex flex-col min-h-0 bg-dark-bg-secondary">
+          <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-dark-bg-secondary">
             <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
               <div className="flex items-center flex-shrink-0 px-4">
                 <img
@@ -159,10 +159,10 @@ function Layout() {
                   <a
                     key={item.name}
                     href={item.href}
-                    className="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-dark-text-primary hover:bg-dark-bg-tertiary"
+                    className="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-900 dark:text-dark-text-primary hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary"
                   >
                     <item.icon
-                      className="mr-3 h-6 w-6 text-dark-text-secondary"
+                      className="mr-3 h-6 w-6 text-gray-500 dark:text-dark-text-secondary"
                       aria-hidden="true"
                     />
                     {item.name}
@@ -170,11 +170,11 @@ function Layout() {
                 ))}
               </nav>
             </div>
-            <div className="flex-shrink-0 flex border-t border-dark-border p-4">
+            <div className="flex-shrink-0 flex border-t border-gray-200 dark:border-dark-border p-4">
               <Menu as="div" className="relative inline-block text-left w-full">
-                <Menu.Button className="group w-full flex items-center px-2 py-2 text-sm font-medium rounded-md text-dark-text-primary hover:bg-dark-bg-tertiary">
+                <Menu.Button className="group w-full flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-900 dark:text-dark-text-primary hover:bg-gray-100 dark:hover:bg-dark-bg-tertiary">
                   <UserCircleIcon
-                    className="mr-3 h-6 w-6 text-dark-text-secondary"
+                    className="mr-3 h-6 w-6 text-gray-500 dark:text-dark-text-secondary"
                     aria-hidden="true"
                   />
                   {user?.name || 'User'}
@@ -188,15 +188,15 @@ function Layout() {
                   leaveFrom="transform opacity-100 scale-100"
                   leaveTo="transform opacity-0 scale-95"
                 >
-                  <Menu.Items className="absolute bottom-full left-0 w-56 mb-2 rounded-md shadow-lg bg-dark-bg-tertiary ring-1 ring-black ring-opacity-5 focus:outline-none">
+                  <Menu.Items className="absolute bottom-full left-0 w-56 mb-2 rounded-md shadow-lg bg-white dark:bg-dark-bg-tertiary ring-1 ring-black ring-opacity-5 focus:outline-none">
                     <div className="py-1">
                       <Menu.Item>
                         {({ active }) => (
                           <button
                             onClick={handleLogout}
                             className={`${
-                              active ? 'bg-dark-bg-primary' : ''
-                            } block w-full text-left px-4 py-2 text-sm text-dark-text-primary`}
+                              active ? 'bg-gray-100 dark:bg-dark-bg-primary' : ''
+                            } block w-full text-left px-4 py-2 text-sm text-gray-900 dark:text-dark-text-primary`}
                           >
                             Sign out
                           </button>
@@ -212,18 +212,21 @@ function Layout() {
       </div>
 
       {/* Main content */}
-      <div className="flex flex-col w-0 flex-1 overflow-hidden">
-        <div className="md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3">
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Top bar */}
+        <div className="relative z-10 flex-shrink-0 flex h-16 bg-white dark:bg-dark-bg-secondary shadow">
           <button
             type="button"
-            className="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-dark-text-primary hover:text-dark-text-secondary focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+            className="px-4 border-r border-gray-200 dark:border-dark-border text-gray-500 dark:text-dark-text-secondary focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 md:hidden"
             onClick={() => setSidebarOpen(true)}
           >
             <span className="sr-only">Open sidebar</span>
             <Bars3Icon className="h-6 w-6" aria-hidden="true" />
           </button>
         </div>
-        <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none">
+
+        {/* Main content area */}
+        <main className="flex-1 relative overflow-y-auto focus:outline-none">
           <div className="py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
               <Outlet />
