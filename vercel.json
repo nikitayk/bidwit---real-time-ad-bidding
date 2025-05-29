@@ -1,8 +1,6 @@
 {
   "version": 2,
   "buildCommand": "cd bidwit-frontend && npm install && npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
   "outputDirectory": "bidwit-frontend/dist",
   "framework": "vite",
   "rewrites": [
@@ -30,16 +28,5 @@
         }
       ]
     }
-  ],
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/node"
-    }
-  ],
-  "build": {
-    "env": {
-      "NODE_VERSION": "18.x"
-    }
-  }
-} 
+  ]
+}

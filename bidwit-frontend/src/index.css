@@ -2,14 +2,72 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  html, body, #root {
-    @apply min-h-screen;
-  }
+:root {
+  --color-primary-500: #6366f1;
+  --color-primary-600: #4f46e5;
+  --color-primary-700: #4338ca;
   
-  body {
-    @apply bg-white text-gray-900 dark:bg-dark-bg-primary dark:text-dark-text-primary;
+  --color-dark-bg-primary: #111827;
+  --color-dark-bg-secondary: #1f2937;
+  --color-dark-bg-tertiary: #374151;
+  
+  --color-dark-text-primary: #f9fafb;
+  --color-dark-text-secondary: #9ca3af;
+  
+  --color-dark-border: #374151;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-dark-bg-primary);
+  color: var(--color-dark-text-primary);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Glowing animations */
+.glow {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 10px rgba(99, 102, 241, 0.5),
+                 0 0 20px rgba(99, 102, 241, 0.3),
+                 0 0 30px rgba(99, 102, 241, 0.2);
   }
+  to {
+    text-shadow: 0 0 20px rgba(99, 102, 241, 0.6),
+                 0 0 30px rgba(99, 102, 241, 0.4),
+                 0 0 40px rgba(99, 102, 241, 0.3);
+  }
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-dark-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-dark-bg-tertiary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-500);
 }
 
 /* Custom styles for date picker in dark mode */
@@ -39,19 +97,17 @@
   @apply bg-primary-500 text-white;
 }
 
-/* Custom scrollbar for dark theme */
-::-webkit-scrollbar {
-  @apply w-2;
+/* Smooth transitions */
+.smooth-transition {
+  @apply transition-all duration-200;
 }
 
-::-webkit-scrollbar-track {
-  @apply bg-dark-bg-secondary;
+/* Input and button focus states */
+input:focus, button:focus {
+  @apply outline-none ring-2 ring-primary-500 ring-opacity-50;
 }
 
-::-webkit-scrollbar-thumb {
-  @apply bg-dark-border rounded-full;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-dark-text-secondary;
+/* Card hover effects */
+.hover-card {
+  @apply transition-transform duration-200 hover:scale-105;
 } 

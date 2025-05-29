@@ -1,5 +1,4 @@
-import create from 'zustand';
-import axios from 'axios';
+import { create } from 'zustand';
 import { toast } from 'react-toastify';
 
 interface AuthState {
@@ -11,16 +10,28 @@ interface AuthState {
   checkAuth: () => Promise<void>;
 }
 
+// Mock user data for development
+const MOCK_USERS = [
+  { email: 'test@example.com', password: 'password123', name: 'Test User' }
+];
+
 export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   user: null,
 
   login: async (email: string, password: string) => {
     try {
-      const response = await axios.post('/api/auth/login', { email, password });
-      localStorage.setItem('token', response.data.token);
-      set({ isAuthenticated: true, user: response.data.user });
-      toast.success('Successfully logged in!');
+      // Mock authentication
+      const user = MOCK_USERS.find(u => u.email === email && u.password === password);
+      
+      if (user) {
+        const mockToken = 'mock-jwt-token';
+        localStorage.setItem('token', mockToken);
+        set({ isAuthenticated: true, user: { email: user.email, name: user.name } });
+        toast.success('Successfully logged in!');
+      } else {
+        throw new Error('Invalid credentials');
+      }
     } catch (error) {
       toast.error('Login failed. Please check your credentials.');
       throw error;
@@ -29,9 +40,17 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   register: async (email: string, password: string, name: string) => {
     try {
-      const response = await axios.post('/api/auth/register', { email, password, name });
-      localStorage.setItem('token', response.data.token);
-      set({ isAuthenticated: true, user: response.data.user });
+      // Mock registration
+      if (MOCK_USERS.some(u => u.email === email)) {
+        throw new Error('User already exists');
+      }
+
+      const newUser = { email, password, name };
+      MOCK_USERS.push(newUser);
+      
+      const mockToken = 'mock-jwt-token';
+      localStorage.setItem('token', mockToken);
+      set({ isAuthenticated: true, user: { email, name } });
       toast.success('Successfully registered!');
     } catch (error) {
       toast.error('Registration failed. Please try again.');
@@ -53,10 +72,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         return;
       }
 
-      const response = await axios.get('/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      set({ isAuthenticated: true, user: response.data.user });
+      // Mock token validation
+      const mockUser = MOCK_USERS[0]; // Just use the first mock user for demonstration
+      set({ isAuthenticated: true, user: { email: mockUser.email, name: mockUser.name } });
     } catch (error) {
       localStorage.removeItem('token');
       set({ isAuthenticated: false, user: null });

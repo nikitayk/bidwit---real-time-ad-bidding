@@ -1,28 +1,34 @@
-import { Pie } from 'react-chartjs-2';
+import { useEffect, useRef } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Doughnut } from 'react-chartjs-2';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 interface WinLossChartProps {
-  wonBids: number;
-  lostBids: number;
+  data: {
+    wins: number;
+    losses: number;
+  };
 }
 
-function WinLossChart({ wonBids, lostBids }: WinLossChartProps) {
-  const data = {
+const WinLossChart = ({ data }: WinLossChartProps) => {
+  const chartRef = useRef<ChartJS<"doughnut", number[], string>>(null);
+
+  const chartData = {
     labels: ['Won', 'Lost'],
     datasets: [
       {
-        data: [wonBids, lostBids],
+        data: [data.wins, data.losses],
         backgroundColor: [
-          'rgba(75, 192, 192, 0.8)',
-          'rgba(255, 99, 132, 0.8)',
+          'rgba(34, 197, 94, 0.8)', // Green for wins
+          'rgba(239, 68, 68, 0.8)', // Red for losses
         ],
         borderColor: [
-          'rgba(75, 192, 192, 1)',
-          'rgba(255, 99, 132, 1)',
+          'rgba(34, 197, 94, 1)',
+          'rgba(239, 68, 68, 1)',
         ],
         borderWidth: 1,
+        hoverOffset: 4,
       },
     ],
   };
@@ -30,53 +36,75 @@ function WinLossChart({ wonBids, lostBids }: WinLossChartProps) {
   const options = {
     responsive: true,
     maintainAspectRatio: false,
+    cutout: '70%',
     plugins: {
       legend: {
         position: 'bottom' as const,
         labels: {
-          color: 'rgb(156, 163, 175)', // text-dark-text-secondary
+          color: '#f1f5f9', // text-dark-text-primary
           padding: 20,
           font: {
-            size: 12,
+            size: 14,
           },
         },
       },
       tooltip: {
+        backgroundColor: 'rgba(17, 24, 39, 0.9)',
+        titleColor: '#f1f5f9',
+        bodyColor: '#f1f5f9',
+        padding: 12,
+        boxPadding: 8,
         callbacks: {
-          label: (context: any) => {
-            const total = wonBids + lostBids;
-            const percentage = ((context.raw / total) * 100).toFixed(1);
-            return `${context.label}: ${context.raw} (${percentage}%)`;
+          label: function(context: any) {
+            const total = data.wins + data.losses;
+            const value = context.raw;
+            const percentage = ((value / total) * 100).toFixed(1);
+            return `${context.label}: ${value} (${percentage}%)`;
           },
         },
       },
     },
   };
 
+  // Add center text with win rate
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (chart) {
+      const totalBids = data.wins + data.losses;
+      const winRate = totalBids > 0 ? ((data.wins / totalBids) * 100).toFixed(1) : '0.0';
+
+      const originalDraw = chart.draw;
+      chart.draw = function() {
+        originalDraw.apply(this);
+        
+        const ctx = chart.ctx;
+        const centerX = (chart.chartArea.left + chart.chartArea.right) / 2;
+        const centerY = (chart.chartArea.top + chart.chartArea.bottom) / 2;
+
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // Win rate percentage
+        ctx.font = 'bold 24px Inter';
+        ctx.fillStyle = '#f1f5f9';
+        ctx.fillText(`${winRate}%`, centerX, centerY - 10);
+        
+        // "Win Rate" label
+        ctx.font = '14px Inter';
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText('Win Rate', centerX, centerY + 15);
+        
+        ctx.restore();
+      };
+    }
+  }, [data]);
+
   return (
-    <div className="bg-dark-bg-secondary p-4 rounded-lg shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-medium text-dark-text-primary">Win/Loss Ratio</h3>
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center">
-            <div className="w-3 h-3 rounded-full bg-[rgba(75,192,192,0.8)] mr-2"></div>
-            <span className="text-sm text-dark-text-secondary">
-              {((wonBids / (wonBids + lostBids || 1)) * 100).toFixed(1)}% Won
-            </span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-3 h-3 rounded-full bg-[rgba(255,99,132,0.8)] mr-2"></div>
-            <span className="text-sm text-dark-text-secondary">
-              {((lostBids / (wonBids + lostBids || 1)) * 100).toFixed(1)}% Lost
-            </span>
-          </div>
-        </div>
-      </div>
-      <div className="h-[300px]">
-        <Pie data={data} options={options} />
-      </div>
+    <div className="relative h-full w-full">
+      <Doughnut ref={chartRef} data={chartData} options={options} />
     </div>
   );
-}
+};
 
 export default WinLossChart; 
