@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "clean": "rimraf dist node_modules .vite package-lock.json",
+    "deploy": "vercel --prod"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
@@ -49,6 +51,14 @@
     "@vitejs/plugin-react": "^4.0.0",
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.27",
-    "vite": "^5.4.19"
+    "postcss-import": "^15.1.0",
+    "postcss-nesting": "^12.0.1",
+    "reusify": "^1.0.4",
+    "rimraf": "^5.0.1",
+    "vite": "^5.4.19",
+    "vercel": "^32.3.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }

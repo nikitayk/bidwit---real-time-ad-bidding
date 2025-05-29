@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "cd bidwit-frontend && npm install && npm run build",
-  "outputDirectory": "bidwit-frontend/dist",
+  "buildCommand": "npm install && npm run build",
+  "outputDirectory": "dist",
   "framework": "vite",
   "rewrites": [
     {

@@ -16,22 +16,26 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: false,
+    sourcemap: process.env.NODE_ENV === 'development',
     rollupOptions: {
       output: {
         manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'chart-vendor': ['chart.js', 'react-chartjs-2'],
-          'ui-vendor': ['react-window', 'react-virtualized-auto-sizer'],
-          'icons': ['react-icons'],
+          'ui-vendor': ['@headlessui/react', '@heroicons/react'],
         },
       },
     },
     chunkSizeWarningLimit: 1000,
     minify: 'esbuild',
     target: 'esnext',
+    assetsDir: 'assets',
+    emptyOutDir: true,
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'chart.js', 'react-chartjs-2', 'react-window', 'react-virtualized-auto-sizer'],
+    include: ['react', 'react-dom', 'react-router-dom', 'chart.js', 'react-chartjs-2'],
+  },
+  preview: {
+    port: 3000,
   },
 })
