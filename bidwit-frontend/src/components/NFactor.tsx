@@ -32,7 +32,7 @@ function NFactor({ value, onChange }: NFactor) {
 
       {showTooltip && (
         <div className="bg-dark-bg-tertiary text-dark-text-secondary text-xs p-2 rounded-md mb-2">
-          The N-Factor controls bid aggressiveness. Higher values (>1.0) increase bid amounts, while lower values (&lt;1.0) decrease them.
+          The N-Factor controls bid aggressiveness. Higher values (&gt;1.0) increase bid amounts, while lower values (&lt;1.0) decrease them.
         </div>
       )}
 
