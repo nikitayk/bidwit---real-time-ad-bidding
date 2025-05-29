@@ -1,5 +1,5 @@
 {
-  "framework": "vite",
+  "version": 2,
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
@@ -10,5 +10,17 @@
       "dest": "/",
       "status": 200
     }
-  ]
+  ],
+  "framework": "vite",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/node"
+    }
+  ],
+  "build": {
+    "env": {
+      "NODE_VERSION": "18.x"
+    }
+  }
 } 

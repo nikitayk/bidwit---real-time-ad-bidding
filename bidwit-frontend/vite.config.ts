@@ -1,10 +1,20 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import commonjs from '@rollup/plugin-commonjs'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    nodeResolve({
+      preferBuiltins: true
+    }),
+    commonjs({
+      include: /node_modules/,
+    }),
+    react()
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -18,21 +28,20 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
-    commonjsOptions: {
-      include: [/node_modules/],
-      transformMixedEsModules: true
-    },
     rollupOptions: {
-      external: ['react', 'react-dom'],
-      output: {
-        globals: {
-          react: 'React',
-          'react-dom': 'ReactDOM'
-        },
-        manualChunks: {
-          vendor: ['chart.js', 'react-chartjs-2', 'react-window', 'react-virtualized-auto-sizer', 'react-icons'],
-        },
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
       },
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react')) {
+              return 'react-vendor';
+            }
+            return 'vendor';
+          }
+        }
+      }
     },
     chunkSizeWarningLimit: 1000,
     minify: 'esbuild',
@@ -40,12 +49,9 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: [
-      'react', 
-      'react-dom', 
-      'chart.js', 
-      'react-chartjs-2', 
-      'react-window', 
-      'react-virtualized-auto-sizer'
+      'react',
+      'react-dom',
+      'react/jsx-runtime'
     ],
     esbuildOptions: {
       target: 'es2015'
