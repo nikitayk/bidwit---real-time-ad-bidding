@@ -4,22 +4,10 @@ import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    react({
-      jsxRuntime: 'automatic',
-      jsxImportSource: 'react',
-      babel: {
-        plugins: [
-          ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]
-        ]
-      }
-    })
-  ],
+  plugins: [react()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      'react/jsx-runtime': 'react/jsx-runtime.js',
-      'react/jsx-dev-runtime': 'react/jsx-dev-runtime.js'
     },
   },
   server: {
@@ -50,8 +38,10 @@ export default defineConfig({
       'chart.js', 
       'react-chartjs-2', 
       'react-window', 
-      'react-virtualized-auto-sizer',
-      'react/jsx-runtime'
+      'react-virtualized-auto-sizer'
     ],
+    esbuildOptions: {
+      target: 'esnext'
+    }
   },
 }) 
