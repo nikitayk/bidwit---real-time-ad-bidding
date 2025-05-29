@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "build": "vite build",
+    "preview": "vite preview",
+    "clean": "rm -rf node_modules dist .vite package-lock.json",
+    "fresh": "npm run clean && npm install"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
@@ -43,13 +44,6 @@
     "zustand": "^4.3.9"
   },
   "devDependencies": {
-    "@babel/core": "^7.23.9",
-    "@babel/plugin-transform-react-jsx": "^7.23.4",
-    "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@types/react-datepicker": "^4.11.2",
-    "@types/react-table": "^7.7.14",
-    "@types/react-virtualized": "^9.21.22",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.27",
