@@ -24,10 +24,33 @@ dist-ssr
 *.sln
 *.sw?
 
-# Environment variables
+# Environment files
 .env
-.env.*
-!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Vercel
 .vercel
+.env*.local
+
+# Build files
+build
+out
+.next
+
+# Cache
+.cache
+.npm
+.eslintcache
+.stylelintcache
+
+# Test coverage
+coverage
+.nyc_output
+
+# Misc
+*.pem
+.DS_Store
+Thumbs.db

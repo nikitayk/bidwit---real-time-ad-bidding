@@ -57,44 +57,44 @@ const Register: React.FC = () => {
     <div className="min-h-screen bg-cyber-dark flex items-center justify-center relative overflow-hidden px-4">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-10 left-10 text-neon-blue opacity-20 animate-float">
+        <div className="absolute top-10 left-10 text-neon-blue opacity-10 animate-float">
           <RiHeartsFill className="w-24 h-24" />
         </div>
-        <div className="absolute bottom-10 right-10 text-neon-darkblue opacity-20 animate-float" style={{ animationDelay: '1s' }}>
+        <div className="absolute bottom-10 right-10 text-neon-darkblue opacity-10 animate-float" style={{ animationDelay: '1s' }}>
           <RiHeartsFill className="w-16 h-16" />
         </div>
-        <div className="absolute top-1/4 right-1/4 text-soft-blue opacity-20 animate-float" style={{ animationDelay: '2s' }}>
+        <div className="absolute top-1/4 right-1/4 text-soft-blue opacity-10 animate-float" style={{ animationDelay: '2s' }}>
           <RiSparklingFill className="w-12 h-12" />
         </div>
-        <div className="absolute bottom-1/4 left-1/4 text-soft-darkblue opacity-20 animate-float" style={{ animationDelay: '1.5s' }}>
+        <div className="absolute bottom-1/4 left-1/4 text-soft-darkblue opacity-10 animate-float" style={{ animationDelay: '1.5s' }}>
           <RiSparklingFill className="w-20 h-20" />
         </div>
       </div>
 
       {/* Grid overlay */}
-      <div className="fixed inset-0 grid-lines pointer-events-none"></div>
+      <div className="fixed inset-0 grid-lines opacity-10 pointer-events-none"></div>
 
-      <div className="metric-card w-full max-w-md relative z-10">
+      <div className="cyber-card p-8 rounded-lg w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold tracking-wider text-neon-blue neon-text mb-2">
+          <h1 className="text-4xl font-bold tracking-wider text-white mb-3 neon-text">
             BIDWIT
           </h1>
-          <p className="text-soft-darkblue animate-shimmer">Create your account</p>
+          <p className="text-lg text-white/80">Create your account</p>
         </div>
 
         <form onSubmit={handleRegister} className="space-y-6" noValidate>
           <div>
-            <label className="block text-sm font-medium text-neon-blue mb-2 animate-shimmer">
-              NAME
+            <label className="block text-base font-semibold text-white mb-2">
+              Full Name
             </label>
             <div className="relative group">
-              <FiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neon-blue" />
+              <FiUser className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white text-xl" />
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-cyber-darker border border-neon-blue/30 rounded-lg pl-10 pr-4 py-2 text-white focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue"
-                placeholder="Enter your name"
+                className="w-full bg-cyber-darker border-2 border-white/30 rounded-lg pl-12 pr-4 py-3 text-white text-base placeholder:text-white/50 focus:outline-none focus:border-white/50"
+                placeholder="Enter your full name"
                 required
                 autoComplete="name"
               />
@@ -102,16 +102,16 @@ const Register: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-neon-darkblue mb-2 animate-shimmer">
-              EMAIL
+            <label className="block text-base font-semibold text-white mb-2">
+              Email Address
             </label>
             <div className="relative group">
-              <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neon-darkblue" />
+              <FiMail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white text-xl" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-cyber-darker border border-neon-darkblue/30 rounded-lg pl-10 pr-4 py-2 text-white focus:outline-none focus:border-neon-darkblue focus:ring-1 focus:ring-neon-darkblue"
+                className="w-full bg-cyber-darker border-2 border-white/30 rounded-lg pl-12 pr-4 py-3 text-white text-base placeholder:text-white/50 focus:outline-none focus:border-white/50"
                 placeholder="Enter your email"
                 required
                 autoComplete="email"
@@ -120,16 +120,16 @@ const Register: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-neon-blue mb-2 animate-shimmer">
-              PASSWORD
+            <label className="block text-base font-semibold text-white mb-2">
+              Password
             </label>
             <div className="relative group">
-              <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neon-blue" />
+              <FiLock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white text-xl" />
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-cyber-darker border border-neon-blue/30 rounded-lg pl-10 pr-12 py-2 text-white focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue"
+                className="w-full bg-cyber-darker border-2 border-white/30 rounded-lg pl-12 pr-12 py-3 text-white text-base placeholder:text-white/50 focus:outline-none focus:border-white/50"
                 placeholder="Create a password"
                 required
                 autoComplete="new-password"
@@ -137,7 +137,7 @@ const Register: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neon-blue hover:text-soft-blue"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white text-xl hover:text-white/80"
               >
                 {showPassword ? <FiEyeOff /> : <FiEye />}
               </button>
@@ -145,16 +145,16 @@ const Register: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-neon-darkblue mb-2 animate-shimmer">
-              CONFIRM PASSWORD
+            <label className="block text-base font-semibold text-white mb-2">
+              Confirm Password
             </label>
             <div className="relative group">
-              <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neon-darkblue" />
+              <FiLock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white text-xl" />
               <input
                 type={showPassword ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full bg-cyber-darker border border-neon-darkblue/30 rounded-lg pl-10 pr-12 py-2 text-white focus:outline-none focus:border-neon-darkblue focus:ring-1 focus:ring-neon-darkblue"
+                className="w-full bg-cyber-darker border-2 border-white/30 rounded-lg pl-12 pr-12 py-3 text-white text-base placeholder:text-white/50 focus:outline-none focus:border-white/50"
                 placeholder="Confirm your password"
                 required
                 autoComplete="new-password"
@@ -163,15 +163,15 @@ const Register: React.FC = () => {
           </div>
 
           {error && (
-            <div className="p-3 bg-cyber-blue/10 border border-cyber-blue rounded-lg animate-shimmer">
-              <p className="text-cyber-blue text-sm">{error}</p>
+            <div className="p-4 bg-red-500/10 border-2 border-red-500/30 rounded-lg">
+              <p className="text-red-400 text-base">{error}</p>
             </div>
           )}
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between pt-2">
             <Link
               to="/login"
-              className="text-sm text-soft-blue hover:text-neon-blue"
+              className="text-base text-white hover:text-white/80 transition-colors duration-200"
             >
               Already have an account? Sign in
             </Link>
@@ -180,7 +180,7 @@ const Register: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-2 px-4 bg-gradient-sparkle text-white rounded-lg font-medium hover:animate-glow disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 px-4 bg-gradient-sparkle text-white text-base font-semibold rounded-lg hover:opacity-90 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-4"
           >
             {isLoading ? (
               <span className="flex items-center justify-center">

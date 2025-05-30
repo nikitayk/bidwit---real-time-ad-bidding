@@ -23,23 +23,27 @@ export default {
         'soft-darkblue': '#99bbff',
         'cyber-blue': '#00a3ff',
         'cyber-darkblue': '#0033ff',
+        'cyber-dark': '#0a0a0f',
+        'cyber-darker': '#070709',
+        'cyber-medium': '#1a1b3d',
+        'cyber-light': '#2a2b5d',
       },
       keyframes: {
         shimmer: {
-          '0%': { opacity: 1 },
-          '50%': { opacity: 0.5 },
-          '100%': { opacity: 1 },
+          '0%': { opacity: 0.8 },
+          '50%': { opacity: 0.4 },
+          '100%': { opacity: 0.8 },
         },
         float: {
           '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-10px)' },
+          '50%': { transform: 'translateY(-5px)' },
         },
         glow: {
           '0%, 100%': {
-            'box-shadow': '0 0 5px rgba(0, 243, 255, 0.5), 0 0 20px rgba(0, 102, 255, 0.3)',
+            'box-shadow': '0 0 3px rgba(255, 255, 255, 0.3), 0 0 10px rgba(0, 243, 255, 0.2)',
           },
           '50%': {
-            'box-shadow': '0 0 10px rgba(0, 243, 255, 0.8), 0 0 30px rgba(0, 102, 255, 0.5)',
+            'box-shadow': '0 0 5px rgba(255, 255, 255, 0.5), 0 0 15px rgba(0, 243, 255, 0.3)',
           },
         },
         sparkle: {
@@ -61,17 +65,24 @@ export default {
       },
       animation: {
         shimmer: 'shimmer 3s ease-in-out infinite',
-        float: 'float 6s ease-in-out infinite',
+        float: 'float 4s ease-in-out infinite',
         glow: 'glow 2s ease-in-out infinite',
         sparkle: 'sparkle 3s linear infinite',
         blink: 'blink 1s step-end infinite',
       },
       backgroundImage: {
-        'gradient-sparkle': 'linear-gradient(90deg, #00f3ff, #0066ff, #99f3ff, #99bbff, #00f3ff)',
-        'gradient-sparkle-alt': 'linear-gradient(90deg, #99bbff, #0066ff, #99f3ff, #00f3ff, #99bbff)',
+        'gradient-sparkle': 'linear-gradient(90deg, rgba(255, 255, 255, 0.7), rgba(0, 243, 255, 0.7))',
+        'gradient-sparkle-alt': 'linear-gradient(90deg, rgba(153, 187, 255, 0.7), rgba(0, 102, 255, 0.7))',
+        'grid-lines': `
+          linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)
+        `,
+        'grid-pattern': `linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px)`
       },
       backgroundSize: {
-        'sparkle': '300% 100%',
+        'sparkle': '200% 100%',
+        'grid': '40px 40px'
       },
     },
   },

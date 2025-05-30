@@ -22,7 +22,9 @@ export default defineConfig({
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'chart-vendor': ['chart.js', 'react-chartjs-2'],
-          'ui-vendor': ['@headlessui/react', '@heroicons/react'],
+          'ui-vendor': ['@headlessui/react', '@heroicons/react', 'react-icons'],
+          'data-vendor': ['zustand', 'react-table', 'react-virtualized', 'react-window'],
+          'form-vendor': ['react-datepicker', 'react-dropzone', 'react-toastify']
         },
       },
     },
@@ -31,9 +33,27 @@ export default defineConfig({
     target: 'esnext',
     assetsDir: 'assets',
     emptyOutDir: true,
+    cssCodeSplit: true,
+    modulePreload: true,
+    reportCompressedSize: false,
+    cssMinify: true,
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', 'chart.js', 'react-chartjs-2'],
+    include: [
+      'react', 
+      'react-dom', 
+      'react-router-dom', 
+      'chart.js', 
+      'react-chartjs-2',
+      'react-icons',
+      'zustand',
+      'react-table',
+      'react-virtualized',
+      'react-window',
+      'react-datepicker',
+      'react-dropzone',
+      'react-toastify'
+    ],
   },
   preview: {
     port: 3000,
