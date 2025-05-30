@@ -30,7 +30,16 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    host: true
+    host: true,
+    fs: {
+      strict: false
+    },
+    hmr: {
+      overlay: false
+    },
+    watch: {
+      usePolling: true
+    }
   },
   preview: {
     port: 3000,

@@ -291,12 +291,12 @@ const Dashboard: React.FC = () => {
       <div
         style={style}
         className={`p-2 border ${
-          bid.isWon ? 'border-soft-pink bg-soft-pink/5' : 'border-cyber-pink bg-cyber-pink/5'
+          bid.isWon ? 'border-soft-blue bg-soft-blue/5' : 'border-cyber-blue bg-cyber-blue/5'
         } rounded transition-all duration-300 hover:animate-glow`}
       >
         <div className="flex justify-between text-sm">
           <span>{new Date(bid.timestamp).toLocaleTimeString()}</span>
-          <span className={bid.isWon ? 'text-soft-pink' : 'text-cyber-pink'}>
+          <span className={bid.isWon ? 'text-soft-blue' : 'text-cyber-blue'}>
             ${bid.bidPrice.toFixed(2)}
           </span>
         </div>
@@ -304,7 +304,7 @@ const Dashboard: React.FC = () => {
           <span>{bid.campaign}</span>
           <span>CTR: {(bid.ctr * 100).toFixed(2)}%</span>
         </div>
-        <div className="text-xs text-soft-purple mt-1">
+        <div className="text-xs text-soft-darkblue mt-1">
           Execution Time: {bid.executionTime.toFixed(2)}ms
         </div>
       </div>
@@ -332,7 +332,7 @@ const Dashboard: React.FC = () => {
       <div className="max-w-[1920px] mx-auto">
         {/* Status Banner */}
         {isImporting && (
-          <div className="fixed top-0 left-0 right-0 bg-cyber-pink/90 text-white py-2 px-4 text-center z-50 text-sm md:text-base">
+          <div className="fixed top-0 left-0 right-0 bg-cyber-blue/90 text-white py-2 px-4 text-center z-50 text-sm md:text-base">
             Importing data... Please wait
           </div>
         )}
@@ -340,12 +340,12 @@ const Dashboard: React.FC = () => {
         {/* Data Source Indicator */}
         <div className="mb-4 md:mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-2 md:gap-0">
           <div className="flex items-center gap-2">
-            <span className={`h-3 w-3 rounded-full ${isPaused ? 'bg-cyber-pink' : 'bg-soft-pink animate-pulse'}`} />
+            <span className={`h-3 w-3 rounded-full ${isPaused ? 'bg-cyber-blue' : 'bg-soft-blue animate-pulse'}`} />
             <span className="text-xs md:text-sm">
               {isPaused ? 'Updates Paused' : 'Live Updates Active'}
             </span>
           </div>
-          <div className="text-xs md:text-sm text-soft-purple">
+          <div className="text-xs md:text-sm text-soft-darkblue">
             {bidData.length > 0 ? `Showing ${bidData.length} records` : 'No data available'}
           </div>
         </div>
@@ -381,32 +381,32 @@ const Dashboard: React.FC = () => {
           {/* Main Metrics */}
           <div className="lg:col-span-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
             <div className="metric-card p-3 md:p-4">
-              <h3 className="text-neon-pink mb-2 animate-shimmer text-sm md:text-base">Total Bids</h3>
+              <h3 className="text-neon-blue mb-2 animate-shimmer text-sm md:text-base">Total Bids</h3>
               <p className="metric-value text-lg md:text-xl">{metrics.totalBids}</p>
               <div className="flex justify-between text-xs md:text-sm mt-2">
-                <span className="text-soft-pink">Won: {metrics.successfulBids}</span>
-                <span className="text-cyber-pink">Lost: {metrics.failedBids}</span>
+                <span className="text-soft-blue">Won: {metrics.successfulBids}</span>
+                <span className="text-cyber-blue">Lost: {metrics.failedBids}</span>
               </div>
             </div>
             <div className="metric-card p-3 md:p-4">
-              <h3 className="text-neon-purple mb-2 animate-shimmer text-sm md:text-base">Win Rate</h3>
+              <h3 className="text-neon-darkblue mb-2 animate-shimmer text-sm md:text-base">Win Rate</h3>
               <p className="metric-value text-lg md:text-xl">{metrics.winRate.toFixed(2)}%</p>
-              <p className="text-xs md:text-sm text-soft-purple mt-2">
+              <p className="text-xs md:text-sm text-soft-darkblue mt-2">
                 Avg. Execution: {metrics.averageExecutionTime.toFixed(2)}ms
               </p>
             </div>
             <div className="metric-card p-3 md:p-4">
-              <h3 className="text-neon-pink mb-2 animate-shimmer text-sm md:text-base">Budget</h3>
+              <h3 className="text-neon-blue mb-2 animate-shimmer text-sm md:text-base">Budget</h3>
               <p className="metric-value text-lg md:text-xl">${metrics.remainingBudget.toFixed(2)}</p>
               <div className="flex justify-between text-xs md:text-sm mt-2">
-                <span className="text-soft-purple">Total: ${metrics.totalBudget}</span>
-                <span className="text-soft-pink">Spent: ${(metrics.totalBudget - metrics.remainingBudget).toFixed(2)}</span>
+                <span className="text-soft-darkblue">Total: ${metrics.totalBudget}</span>
+                <span className="text-soft-blue">Spent: ${(metrics.totalBudget - metrics.remainingBudget).toFixed(2)}</span>
               </div>
             </div>
             <div className="metric-card p-3 md:p-4">
-              <h3 className="text-neon-purple mb-2 animate-shimmer text-sm md:text-base">Bid Metrics</h3>
+              <h3 className="text-neon-darkblue mb-2 animate-shimmer text-sm md:text-base">Bid Metrics</h3>
               <p className="metric-value text-lg md:text-xl">${metrics.averageBidPrice.toFixed(2)}</p>
-              <p className="text-xs md:text-sm text-soft-purple mt-2">
+              <p className="text-xs md:text-sm text-soft-darkblue mt-2">
                 Average Bid Price | CTR: {(metrics.averageCTR * 100).toFixed(2)}%
               </p>
             </div>
@@ -440,7 +440,7 @@ const Dashboard: React.FC = () => {
                 <FileImport />
                 <button
                   onClick={() => setShowImportGuide(true)}
-                  className="bg-gradient-to-r from-neon-purple to-neon-pink px-3 py-1.5 md:px-4 md:py-2 rounded-lg shadow-lg hover:animate-glow transition-all duration-300 flex items-center gap-2 text-white font-medium border border-neon-pink/30 text-sm md:text-base w-full sm:w-auto justify-center"
+                  className="bg-gradient-to-r from-neon-blue to-cyber-darkblue px-3 py-1.5 md:px-4 md:py-2 rounded-lg shadow-lg hover:animate-glow transition-all duration-300 flex items-center gap-2 text-white font-medium border border-neon-blue/30 text-sm md:text-base w-full sm:w-auto justify-center"
                 >
                   <FiInfo className="w-4 h-4 md:w-5 md:h-5" />
                   Import Guide
@@ -472,16 +472,16 @@ const Dashboard: React.FC = () => {
 
           {/* Charts */}
           <div className="lg:col-span-8 space-y-4 md:space-y-6">
-            <div className="cyber-card p-3 md:p-4 hover:animate-glow transition-all duration-300 border border-neon-pink/30">
-              <h3 className="text-neon-pink mb-3 md:mb-4 animate-shimmer text-sm md:text-base">Bid Performance</h3>
+            <div className="cyber-card p-3 md:p-4 hover:animate-glow transition-all duration-300 border border-neon-blue/30">
+              <h3 className="text-neon-blue mb-3 md:mb-4 animate-shimmer text-sm md:text-base">Bid Performance</h3>
               <div className="h-[300px] md:h-[400px]">
                 <Suspense fallback={<div>Loading chart...</div>}>
                   <Line data={performanceData} options={lineChartOptions} />
                 </Suspense>
               </div>
             </div>
-            <div className="cyber-card p-3 md:p-4 hover:animate-glow transition-all duration-300 border border-neon-purple/30">
-              <h3 className="text-neon-purple mb-3 md:mb-4 animate-shimmer text-sm md:text-base">Campaign Performance</h3>
+            <div className="cyber-card p-3 md:p-4 hover:animate-glow transition-all duration-300 border border-neon-darkblue/30">
+              <h3 className="text-neon-darkblue mb-3 md:mb-4 animate-shimmer text-sm md:text-base">Campaign Performance</h3>
               <div className="h-[250px] md:h-[300px]">
                 <Suspense fallback={<div>Loading chart...</div>}>
                   <Bar data={campaignData} options={barChartOptions} />
@@ -492,8 +492,8 @@ const Dashboard: React.FC = () => {
 
           {/* Bid Console and Campaign KPIs */}
           <div className="lg:col-span-4 space-y-4 md:space-y-6">
-            <div className="cyber-card p-3 md:p-4 hover:animate-glow transition-all duration-300 border border-neon-pink/30">
-              <h3 className="text-neon-pink mb-3 md:mb-4 animate-shimmer text-sm md:text-base">Live Bid Console</h3>
+            <div className="cyber-card p-3 md:p-4 hover:animate-glow transition-all duration-300 border border-neon-blue/30">
+              <h3 className="text-neon-blue mb-3 md:mb-4 animate-shimmer text-sm md:text-base">Live Bid Console</h3>
               <div className="h-[250px] md:h-[300px]">
                 <AutoSizer>
                   {({ height, width }: { height: number; width: number }) => (
@@ -510,33 +510,33 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
 
-            <div className="cyber-card p-3 md:p-4 hover:animate-glow transition-all duration-300 border border-neon-purple/30">
-              <h3 className="text-neon-purple mb-3 md:mb-4 animate-shimmer text-sm md:text-base">Campaign KPIs</h3>
+            <div className="cyber-card p-3 md:p-4 hover:animate-glow transition-all duration-300 border border-neon-darkblue/30">
+              <h3 className="text-neon-darkblue mb-3 md:mb-4 animate-shimmer text-sm md:text-base">Campaign KPIs</h3>
               <div className="space-y-3 md:space-y-4">
                 {campaignKPIs.map(kpi => (
-                  <div key={kpi.name} className="p-2 md:p-3 border border-soft-purple/20 rounded hover:animate-glow transition-all duration-300">
+                  <div key={kpi.name} className="p-2 md:p-3 border border-soft-darkblue/20 rounded hover:animate-glow transition-all duration-300">
                     <div className="flex justify-between items-center mb-2">
-                      <h4 className="font-bold text-soft-purple text-sm md:text-base">{kpi.name}</h4>
-                      <span className="text-xs md:text-sm text-soft-pink">
+                      <h4 className="font-bold text-soft-darkblue text-sm md:text-base">{kpi.name}</h4>
+                      <span className="text-xs md:text-sm text-soft-blue">
                         ${kpi.totalSpent.toFixed(2)}
                       </span>
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-xs md:text-sm">
                       <div>
-                        <p className="text-neon-pink">Win Rate</p>
-                        <p className="text-soft-pink">{kpi.winRate.toFixed(2)}%</p>
+                        <p className="text-neon-blue">Win Rate</p>
+                        <p className="text-soft-blue">{kpi.winRate.toFixed(2)}%</p>
                       </div>
                       <div>
-                        <p className="text-neon-purple">Avg. CTR</p>
-                        <p className="text-soft-purple">{(kpi.averageCTR * 100).toFixed(2)}%</p>
+                        <p className="text-neon-darkblue">Avg. CTR</p>
+                        <p className="text-soft-darkblue">{(kpi.averageCTR * 100).toFixed(2)}%</p>
                       </div>
                       <div>
-                        <p className="text-neon-pink">Total Bids</p>
-                        <p className="text-soft-pink">{kpi.totalBids}</p>
+                        <p className="text-neon-blue">Total Bids</p>
+                        <p className="text-soft-blue">{kpi.totalBids}</p>
                       </div>
                       <div>
-                        <p className="text-neon-purple">Avg. Bid</p>
-                        <p className="text-soft-purple">${kpi.averageBidPrice.toFixed(2)}</p>
+                        <p className="text-neon-darkblue">Avg. Bid</p>
+                        <p className="text-soft-darkblue">${kpi.averageBidPrice.toFixed(2)}</p>
                       </div>
                     </div>
                   </div>

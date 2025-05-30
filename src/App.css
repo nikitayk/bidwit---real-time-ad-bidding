@@ -12,7 +12,7 @@
 
 /* Cyber theme gradients */
 .bg-gradient-sparkle {
-  background: linear-gradient(45deg, #ff2a6d, #9f2fff);
+  background: linear-gradient(45deg, #00a3ff, #0033ff);
 }
 
 .bg-sparkle {
@@ -35,8 +35,8 @@
 /* Grid lines overlay */
 .grid-lines {
   background-image: 
-    linear-gradient(to right, rgba(255, 42, 109, 0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 42, 109, 0.1) 1px, transparent 1px);
+    linear-gradient(to right, rgba(0, 163, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 163, 255, 0.1) 1px, transparent 1px);
   background-size: 20px 20px;
 }
 
@@ -73,31 +73,31 @@
 /* Cyber card styles */
 .cyber-card {
   background: rgba(10, 10, 15, 0.95);
-  box-shadow: 0 8px 32px 0 rgba(255, 42, 109, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 163, 255, 0.1);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 42, 109, 0.18);
+  border: 1px solid rgba(0, 163, 255, 0.18);
 }
 
 /* Dashboard metrics */
 .metric-card {
   background: rgba(10, 10, 15, 0.95);
-  border: 1px solid rgba(255, 42, 109, 0.3);
+  border: 1px solid rgba(0, 163, 255, 0.3);
   padding: 1.5rem;
   border-radius: 0.5rem;
   transition: all 0.3s ease;
 }
 
 .metric-card:hover {
-  border-color: rgba(255, 42, 109, 0.6);
+  border-color: rgba(0, 163, 255, 0.6);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 42, 109, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 163, 255, 0.2);
 }
 
 .metric-value {
   font-size: 2rem;
   font-weight: bold;
-  background: linear-gradient(45deg, #ff2a6d, #9f2fff);
+  background: linear-gradient(45deg, #00a3ff, #0033ff);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -117,16 +117,16 @@ input, button {
 /* Neon text effects */
 .neon-text {
   text-shadow: 
-    0 0 5px rgba(255, 42, 109, 0.5),
-    0 0 10px rgba(255, 42, 109, 0.3),
-    0 0 15px rgba(255, 42, 109, 0.1);
+    0 0 5px rgba(0, 163, 255, 0.5),
+    0 0 10px rgba(0, 163, 255, 0.3),
+    0 0 15px rgba(0, 163, 255, 0.1);
 }
 
-.neon-purple {
+.neon-darkblue {
   text-shadow: 
-    0 0 5px rgba(159, 47, 255, 0.5),
-    0 0 10px rgba(159, 47, 255, 0.3),
-    0 0 15px rgba(159, 47, 255, 0.1);
+    0 0 5px rgba(0, 51, 255, 0.5),
+    0 0 10px rgba(0, 51, 255, 0.3),
+    0 0 15px rgba(0, 51, 255, 0.1);
 }
 
 .logo {

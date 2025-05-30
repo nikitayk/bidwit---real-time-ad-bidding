@@ -3,18 +3,18 @@
 @tailwind utilities;
 
 :root {
-  --color-primary-500: #6366f1;
-  --color-primary-600: #4f46e5;
-  --color-primary-700: #4338ca;
+  --color-primary-500: #062872 !important;
+  --color-primary-600: #1d4ed8 !important;
+  --color-primary-700: #1e40af !important;
   
-  --color-dark-bg-primary: #111827;
-  --color-dark-bg-secondary: #1f2937;
-  --color-dark-bg-tertiary: #374151;
+  --color-dark-bg-primary: #0f172a !important;
+  --color-dark-bg-secondary: #1e293b !important;
+  --color-dark-bg-tertiary: #334155 !important;
   
-  --color-dark-text-primary: #f9fafb;
-  --color-dark-text-secondary: #9ca3af;
+  --color-dark-text-primary: #f8fafc !important;
+  --color-dark-text-secondary: #94a3b8 !important;
   
-  --color-dark-border: #374151;
+  --color-dark-border: #334155 !important;
 }
 
 body {
@@ -40,14 +40,14 @@ code {
 
 @keyframes glow {
   from {
-    text-shadow: 0 0 10px rgba(99, 102, 241, 0.5),
-                 0 0 20px rgba(99, 102, 241, 0.3),
-                 0 0 30px rgba(99, 102, 241, 0.2);
+    text-shadow: 0 0 10px rgba(37, 99, 235, 0.5),
+                 0 0 20px rgba(37, 99, 235, 0.3),
+                 0 0 30px rgba(37, 99, 235, 0.2);
   }
   to {
-    text-shadow: 0 0 20px rgba(99, 102, 241, 0.6),
-                 0 0 30px rgba(99, 102, 241, 0.4),
-                 0 0 40px rgba(99, 102, 241, 0.3);
+    text-shadow: 0 0 20px rgba(37, 99, 235, 0.6),
+                 0 0 30px rgba(37, 99, 235, 0.4),
+                 0 0 40px rgba(37, 99, 235, 0.3);
   }
 }
 
