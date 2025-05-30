@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+
+// API base URL
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 interface Campaign {
   id: string;
@@ -43,6 +46,29 @@ const Campaigns: React.FC = () => {
     endDate: ''
   });
 
+  useEffect(() => {
+    fetchCampaigns();
+  }, []);
+
+  const fetchCampaigns = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await fetch(`${API_BASE_URL}/api/campaigns`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch campaigns');
+      }
+      
+      const data = await response.json();
+      setCampaigns(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred while fetching campaigns');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const validateForm = (): boolean => {
     const errors: FormErrors = {};
     let isValid = true;
@@ -82,18 +108,68 @@ const Campaigns: React.FC = () => {
     return isValid;
   };
 
-  const handleCreateCampaign = () => {
+  const handleCreateCampaign = async () => {
     if (!validateForm()) {
       return;
     }
-    // Add campaign creation logic here
-    setShowNewCampaign(false);
-    setFormErrors({});
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await fetch(`${API_BASE_URL}/api/campaigns`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newCampaign),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create campaign');
+      }
+
+      // Refresh campaigns list
+      await fetchCampaigns();
+      
+      // Reset form and close modal
+      setShowNewCampaign(false);
+      setFormErrors({});
+      setNewCampaign({
+        name: '',
+        budget: 0,
+        targetCPA: 0,
+        startDate: '',
+        endDate: ''
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred while creating the campaign');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDeleteCampaign = (id: string) => {
-    // Add campaign deletion logic here
-    setCampaigns(campaigns.filter(campaign => campaign.id !== id));
+  const handleDeleteCampaign = async (id: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await fetch(`${API_BASE_URL}/api/campaigns/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete campaign');
+      }
+
+      setCampaigns(campaigns.filter(campaign => campaign.id !== id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred while deleting the campaign');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -356,9 +432,12 @@ const Campaigns: React.FC = () => {
                 </button>
                 <button
                   onClick={handleCreateCampaign}
-                  className="px-6 py-3 bg-white text-cyber-darker text-base font-semibold rounded-lg hover:bg-white/90 transition-all duration-200"
+                  disabled={isLoading}
+                  className={`px-6 py-3 bg-white text-cyber-darker text-base font-semibold rounded-lg transition-all duration-200 ${
+                    isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/90'
+                  }`}
                 >
-                  Create Campaign
+                  {isLoading ? 'Creating...' : 'Create Campaign'}
                 </button>
               </div>
             </div>
